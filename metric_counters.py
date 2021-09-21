@@ -1,11 +1,14 @@
+from unpacking_folders import *
+
 class ZTE_Object:
 
 	
-	def __init__(self,instructions_file,primary_keys_file):
+	def __init__(self,instructions_file,primary_keys_file, folder_object):
 		self.__counters = self.__class__.__extract_counters_from_formulas(instructions_file)
 		self.__metrics = self.__class__.__extract_metrics_from_file(instructions_file)
 		self.__primary_keys = self.__class__.__extract_primary_keys_from_file(primary_keys_file)
 		self.__headers = ','.join(self.__primary_keys + self.__counters)
+		self.__files_path = folder_object.result_path
 
 	@staticmethod
 	def __extract_formulas_from_file(instructions_file):
@@ -54,6 +57,8 @@ class ZTE_Object:
 	@property
 	def headers(self):
 		return self.__headers
-
+	@property
+	def files_path(self):
+		return self.__files_path
 
  			

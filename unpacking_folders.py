@@ -3,17 +3,19 @@ import zipfile
 
 
 class Folder:
-    def __init__(self, files_path, result_path):
-        self.__files_path = files_path
-        self.__result_path = result_path
-        self.__class__.__processing_folder(self.__files_path, self.__result_path)
+    def __init__(self, path):
+        self.__called_path = path
+        self.__files_path = path + "/input_files/PM/"
+        self.__result_path = path + "/unzipped_files"
+        self.__class__.__processing_folder(self.__called_path, self.__files_path, self.__result_path)
+
 
     @property
     def result_path(self):
         return self.__result_path
 
     @staticmethod
-    def __unpack_unzip(files_path, result_path):
+    def __unpack_unzip(path, files_path, result_path):
         os.chdir(files_path)
         for item in os.listdir(files_path):
             if item.endswith(".zip"):
@@ -22,8 +24,8 @@ class Folder:
                 zip_ref.extractall(result_path)
                 zip_ref.close()
                 os.remove(file_name)
-        os.remove('.DS_Store')
         os.rmdir(files_path)
+        os.chdir(path)
 
     @staticmethod
     def __remove_r(text):
@@ -45,10 +47,10 @@ class Folder:
         return(result_list)
 
     @classmethod
-    def __processing_folder(cls, files_path, result_path):
+    def __processing_folder(cls, path, files_path, result_path):
         os.chdir(files_path)
         filtered_files_list = cls.__duplicate_filtering([[i.replace('.zip', ''), os.path.getsize(i)] for i in os.listdir(files_path)])
         for item in os.listdir(files_path):
             if str(item).replace('.zip', '') not in filtered_files_list:
                 os.remove(item)
-        cls.__unpack_unzip(files_path, result_path)
+        cls.__unpack_unzip(path, files_path, result_path)

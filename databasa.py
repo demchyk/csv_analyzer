@@ -33,8 +33,7 @@ class DataBasa:
 				self.__connection.commit()
 			except sqlite3.IntegrityError:
 				print('Повторяемся') #need to skip
-			finally:
-				self.__connection.close()
+
 
 	@staticmethod
 	def __check_csv(file,primary_keys,counters):
@@ -56,10 +55,5 @@ class DataBasa:
 				useful_values.append(value)
 		return useful_values
 
-
-file = 'formula.txt'
-keys = 'GSM_PKEY.txt'
-zek = 'test.csv'
-GSM = ZTE_Object(file,keys)
-db = DataBasa(GSM,'basa','table')
-db.fill_table(zek)
+	def close_connection(self):
+		self.__connection.close()
