@@ -42,8 +42,8 @@ class ZTE_Object:
 			for word in bad_words:
 				expression = expression.replace(word,' ')
 			text_list = [word.strip() for word in expression.split()]
-		all_counters.append(text_list[1:])
-		return list(set(all_counters[0]))
+			all_counters += (text_list[1:])
+		return list(set(all_counters))
 
 	@property
 	def counters(self):

@@ -36,7 +36,8 @@ class Folder:
 
     @classmethod
     def __duplicate_filtering(cls, size_files_list):
-        detach_r_list = [[i, cls.__remove_r(size_files_list[i][0]), size_files_list[i][1]] for i in range(len(size_files_list))]
+        # detach_r_list = [[i, cls.__remove_r(size_files_list[i][0]), size_files_list[i][1]] for i in range(len(size_files_list))]
+        detach_r_list = [[i, size_files_list[i][0], size_files_list[i][1]] for i in range(len(size_files_list))]
         detach_r_list.sort(key=lambda x: (x[1], x[2]), reverse=True)
         names_list = []
         result_list = []
