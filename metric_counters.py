@@ -45,6 +45,7 @@ class ZTE_Object:
 			all_counters += (text_list[1:])
 		return list(set(all_counters))
 
+
 	@property
 	def counters(self):
 		return self.__counters

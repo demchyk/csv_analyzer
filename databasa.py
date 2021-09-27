@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
 from metric_counters import *
-import time
+
 
 class DataBasa:
 
@@ -21,25 +21,40 @@ class DataBasa:
 	def __init_db_connection(db_name):
 		return sqlite3.connect(db_name),sqlite3.connect(db_name).cursor()
 
-	def gather_values(self):
-		query = f''' SELECT {','.join(self.__primary_keys)},{','.join(['MAX(' + elem.strip() + ')' + 'AS ' + elem for elem in self.__counters])} FROM {self.__table_name + '_temp'} GROUP BY {','.join(self.__primary_keys)}'''
-		self.__cursor.execute(f''' CREATE TABLE IF NOT EXISTS {self.__table_name + '_notemo'} AS {query}''')
+	@classmethod
+	def __fill_temp_data_frame_list(cls,path,primary_keys,counters):
+		temp_data_frame_list = []
+		for file_from_path in os.listdir(path):
+			file = path + '/' + file_from_path
+			useful_values_from_csv = cls.__get_useful_values_from_csv(file,primary_keys,counters)
+			if not useful_values_from_csv:
+				pass
+			else:
+				data_frame_from_csv = pd.read_csv(file, usecols = useful_values_from_csv + primary_keys)
+				temp_data_frame_list.append(data_frame_from_csv)
+		return temp_data_frame_list
+
+	@staticmethod
+	def __rename_metrics_for_usage(metrics,counters):
+		new_dict = {}
+		for key,value in metrics.items():
+			new_value = value
+			for counter in counters:
+				new_value = new_value.replace(counter,'grouped_counters["' + counter + '"]')
+			new_dict[key] = new_value
+		return new_dict
 
 
-	def fill_table(self,file):
-		useful_values_from_csv = self.__get_useful_values_from_csv(file,self.__primary_keys,self.__counters)
-		if not useful_values_from_csv:
-			# print('Sorry')
-			pass
-		else:
-			try:
-				self.__cursor.execute(f''' CREATE TABLE IF NOT EXISTS {self.__table_name + '_temp'} ({self.__headers}) ''')
-				data_frame_from_csv = pd.read_csv(file, usecols = useful_values_from_csv + self.__primary_keys)
-				data_frame_from_csv = data_frame_from_csv.fillna(0)
-				data_frame_from_csv.to_sql(self.__table_name + '_temp', self.__connection, if_exists = 'append',index = False)
-				self.__connection.commit()
-			except sqlite3.IntegrityError:
-				print('Повторяемся') #need to skip
+	def result_to_sql(self):
+		metrics = self.__rename_metrics_for_usage(self.__metrics,self.__counters)
+		temp_data_frame_list = self.__fill_temp_data_frame_list(self.__files_path, self.__primary_keys, self.__counters)
+		concated_data_frames = pd.concat(temp_data_frame_list)
+		grouped_counters = concated_data_frames.groupby(self.__primary_keys).max()
+		for key,value in metrics.items():
+			grouped_counters[key] = eval(value)
+		grouped_counters.reset_index(inplace = True)
+		final_table = grouped_counters[self.__primary_keys + list(self.__metrics.keys())]
+		final_table.to_sql('semi_temp',self.__connection, if_exists = 'append', index = False)
 
 	@staticmethod
 	def __get_useful_values_from_csv(file,primary_keys,counters):	
