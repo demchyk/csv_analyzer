@@ -2,56 +2,49 @@ import os
 import zipfile
 
 
-class Folder:
-    def __init__(self, path):
-        self.__called_path = path
-        self.__files_path = path + "/input_files/PM/"
-        self.__result_path = path + "/unzipped_files"
-        self.__class__.__processing_folder(self.__called_path, self.__files_path, self.__result_path)
+class Net_Folder:
+    def __new__(cls, path):
+        if cls.__check_requirements(path) and cls.__check_input_data(path):
+            return super().__new__(cls)
+        else:
+            return None
 
+    def __init__(self, path):
+        self.__path = path
+        self.__class__.__processing_input(self.__path)
 
     @property
-    def result_path(self):
-        return self.__result_path
+    def path(self):
+        return self.__path
 
     @staticmethod
-    def __unpack_unzip(path, files_path, result_path):
-        os.chdir(files_path)
-        for item in os.listdir(files_path):
-            if item.endswith(".zip"):
-                file_name = os.path.abspath(item)
-                zip_ref = zipfile.ZipFile(file_name)
-                zip_ref.extractall(result_path)
-                zip_ref.close()
-                os.remove(file_name)
-        os.rmdir(files_path)
-        os.chdir(path)
-
-    @staticmethod
-    def __remove_r(text):
-        if text[-3:-1] == '_R':
-            return(text[:-3])
+    def __check_requirements(path):
+        formula = path + "/requirements/formula.txt"
+        keys = path + "/requirements/keys.txt"
+        if os.path.isfile(formula) and os.path.isfile(keys):
+            return True
         else:
-            return(text)
+            return False
 
-    @classmethod
-    def __duplicate_filtering(cls, size_files_list):
-        # detach_r_list = [[i, cls.__remove_r(size_files_list[i][0]), size_files_list[i][1]] for i in range(len(size_files_list))]
-        detach_r_list = [[i, size_files_list[i][0], size_files_list[i][1]] for i in range(len(size_files_list))]
-        detach_r_list.sort(key=lambda x: (x[1], x[2]), reverse=True)
-        names_list = []
-        result_list = []
-        for item in detach_r_list:
-            if item[1] not in names_list:
-                names_list.append(item[1])
-                result_list.append(size_files_list[item[0]][0])
-        return(result_list)
+    @staticmethod
+    def __check_input_data(path):
+        cur_path = path + "/input_data/"
+        if os.listdir(cur_path):
+            return True
+        else:
+            return False
 
-    @classmethod
-    def __processing_folder(cls, path, files_path, result_path):
-        os.chdir(files_path)
-        filtered_files_list = cls.__duplicate_filtering([[i.replace('.zip', ''), os.path.getsize(i)] for i in os.listdir(files_path)])
-        for item in os.listdir(files_path):
-            if str(item).replace('.zip', '') not in filtered_files_list:
-                os.remove(item)
-        cls.__unpack_unzip(path, files_path, result_path)
+    @staticmethod
+    def __processing_input(path):
+        cur_path = path + "/input_data"
+        for address, dirs, files in os.walk(cur_path):
+            for file in files:
+                if file.endswith(".zip"):
+                    zip_ref = zipfile.ZipFile(os.path.join(address, file))
+                    zip_ref.extractall(path + "/processed_files/")
+                    zip_ref.close()
+
+
+
+lte = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/LTE")
+
