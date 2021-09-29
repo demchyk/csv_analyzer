@@ -1,5 +1,6 @@
 import os
 import zipfile
+import shutil
 
 
 class Net_Folder:
@@ -34,8 +35,8 @@ class Net_Folder:
         else:
             return False
 
-    @staticmethod
-    def __processing_input(path):
+    @classmethod
+    def __processing_input(cls, path):
         cur_path = path + "/input_data"
         for address, dirs, files in os.walk(cur_path):
             for file in files:
@@ -43,7 +44,16 @@ class Net_Folder:
                     zip_ref = zipfile.ZipFile(os.path.join(address, file))
                     zip_ref.extractall(path + "/processed_files/")
                     zip_ref.close()
+        cls.__remove_directory_content(cur_path)
 
+    @staticmethod
+    def __remove_directory_content(dir):
+        for files in os.listdir(dir):
+            path = os.path.join(dir, files)
+            try:
+                shutil.rmtree(path)
+            except OSError:
+                os.remove(path)
 
 
 lte = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/LTE")
