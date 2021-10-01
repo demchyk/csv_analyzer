@@ -15,8 +15,16 @@ class Net_Folder:
         self.__class__.__processing_input(self.__path)
 
     @property
-    def path(self):
-        return self.__path
+    def csv_path(self):
+        return self.__path + "/processed_files"
+
+    @property
+    def formula(self):
+        return self.__path + "/requirements/formula.txt"
+
+    @property
+    def keys(self):
+        return self.__path + "/requirements/keys.txt"
 
     @staticmethod
     def __check_requirements(path):
@@ -56,5 +64,4 @@ class Net_Folder:
                 os.remove(path)
 
 
-lte = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/LTE")
-
+# lte = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/LTE")
