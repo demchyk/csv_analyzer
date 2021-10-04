@@ -1,6 +1,8 @@
 import os
 import zipfile
 import shutil
+from numba import jit
+import time
 
 
 class Net_Folder:
@@ -12,7 +14,8 @@ class Net_Folder:
 
     def __init__(self, path):
         self.__path = path
-        self.__class__.__processing_input(self.__path)
+        # self.__class__.__processing_input(self.__path)
+        self.__zipfile_list = self.__class__.__get_zipfile_list(self.__path)
 
     @property
     def csv_path(self):
@@ -29,6 +32,10 @@ class Net_Folder:
     @property
     def nodes(self):
         return self.__path + "/requirements/nodes.txt"
+
+    @property
+    def zipfile_list(self):
+        return self.zipfile_list
 
     @staticmethod
     def __check_requirements(path):
@@ -48,6 +55,7 @@ class Net_Folder:
             return False
 
     @classmethod
+    # @jit(forceobj=True, parallel=True)
     def __processing_input(cls, path):
         cur_path = path + "/input_data"
         for address, dirs, files in os.walk(cur_path):
@@ -57,6 +65,16 @@ class Net_Folder:
                     zip_ref.extractall(path + "/processed_files/")
                     zip_ref.close()
         # cls.__remove_directory_content(cur_path)
+
+    @classmethod
+    def __get_zipfile_list(cls, path):
+        rez = []
+        cur_path = path + "/input_data"
+        for address, dirs, files in os.walk(cur_path):
+            for file in files:
+                if file.endswith(".zip"):
+                    rez.append(os.path.join(address, file))
+        return rez
 
     @staticmethod
     def __remove_directory_content(dir):
@@ -68,4 +86,8 @@ class Net_Folder:
                 os.remove(path)
 
 
-# lte = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/LTE")
+time1 = time.time()
+lte = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/WCDMA")
+time2 = time.time()
+print(time2 - time1)
+
