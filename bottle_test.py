@@ -1,14 +1,21 @@
 from bottle import *
-from dbwork import *
 
 app = Bottle()
-def hello():
-	return 'Hello!'
+
+# Static Routes
+@app.get("/static/<filepath>")
+def css(filepath):
+    return static_file(filepath, root="static")
 
 
 @app.route('/')
 def main():
-	return creator_basa()
+	return template('index')
 
-debug(True)
-run(app, host = 'localhost', port = 8080, reloader = True)
+@app.route('/load-data')
+def main():
+	return template('index')
+	
+
+
+run(app, host = 'localhost', port = 8080, reloader = True, debug = True)

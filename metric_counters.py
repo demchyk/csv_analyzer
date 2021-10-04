@@ -1,14 +1,18 @@
-from unpacking_folders import *
-
 class ZTE_Object:
 
 	
-	def __init__(self,instructions_file,primary_keys_file, folder_object):
-		self.__counters = self.__class__.__extract_counters_from_formulas(instructions_file)
-		self.__metrics = self.__class__.__extract_metrics_from_file(instructions_file)
-		self.__primary_keys = self.__class__.__extract_primary_keys_from_file(primary_keys_file)
+	def __init__(self, folder_object):
+		self.__files_path = folder_object.csv_path
+		self.__instructions_file = folder_object.formula
+		self.__primary_keys_file = folder_object.keys
+		self.__nodes_file = folder_object.nodes
+		self.__counters = self.__class__.__extract_counters_from_formulas(self.__instructions_file)
+		self.__metrics = self.__class__.__extract_metrics_from_file(self.__instructions_file)
+		self.__primary_keys = self.__class__.__extract_primary_keys_from_file(self.__primary_keys_file)
+		self.__nodes = self.__class__.__extract_nodes_from_file(self.__nodes_file)[1:]
+		self.__nodes_key = self.__class__.__extract_nodes_from_file(self.__nodes_file)[0]
 		self.__headers = ','.join(self.__primary_keys + self.__counters)
-		self.__files_path = folder_object.result_path
+
 
 	@staticmethod
 	def __extract_formulas_from_file(instructions_file):
@@ -21,6 +25,13 @@ class ZTE_Object:
 		with open(primary_keys_file,'rt') as f:
 			primary_keys = [keys_temp.strip() for keys_temp in f.readlines() if not keys_temp.isspace()]
 		return primary_keys
+
+	@staticmethod
+	def __extract_nodes_from_file(nodes_file):
+		with open(nodes_file,'rt') as f:
+			nodes = [nodes_temp.strip() for nodes_temp in f.readlines() if not nodes_temp.isspace()]
+		return nodes	
+
 
 	@classmethod
 	def __extract_metrics_from_file(cls,instructions_file):
@@ -38,11 +49,11 @@ class ZTE_Object:
 		all_counters = []
 		for formula in formulas:
 			expression = formula[formula.find('=') + 1:]
-			bad_words = '+-/*:.,()'
+			bad_words = '+-/*:.,()!@#$%^&'
 			for word in bad_words:
 				expression = expression.replace(word,' ')
-			text_list = [word.strip() for word in expression.split()]
-			all_counters += (text_list[1:])
+			text_list = [word.strip() for word in expression.split() if word[0].isalpha() and word[1:].isdigit()]
+			all_counters += (text_list)
 		return list(set(all_counters))
 
 
@@ -61,5 +72,9 @@ class ZTE_Object:
 	@property
 	def files_path(self):
 		return self.__files_path
-
- 			
+	@property
+	def nodes(self):
+		return self.__nodes
+	@property
+	def nodes_key(self):
+		return self.__nodes_key

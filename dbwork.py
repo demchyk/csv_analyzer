@@ -2,8 +2,7 @@ import sqlite3
 import pandas as pd
 import numpy as np
 import math
-conn = sqlite3.connect('basa.db')
-cur = conn.cursor()
+import sqlalchemy as db
 
 
 # a = ['MAX(' + elem.strip() + ')' + 'AS ' + elem for elem in a.split(',')]
@@ -12,14 +11,11 @@ cur = conn.cursor()
 
 # df = pd.read_sql_query(q,conn)
 # df.fillna(0,inplace=True)
-
-pd.set_option('use_inf_as_na', True)
-df = pd.read_sql_query('SELECT * from semi_temp', conn)
-df = df.groupby([pd.Grouper(key = 'COLLECTTIME', freq = 'd')] + ['BTSNAME']).sum()
-df.to_sql('chekout',conn,if_exists = 'replace', index = False)
-
-
-a = '202109140000'
+engine = db.create_engine('sqlite:///DB/basa.db')
+connection = engine.connect()
+df = pd.read_sql_table('GSM',connection)
+df = df[(df['COLLECTTIME'] >= '2021-09-15') & (df['COLLECTTIME'] <= '2021-09-19')]
+df.to_sql('Timecheck', connection, if_exists = 'replace')
 
 # df = df.fillna(0)
 

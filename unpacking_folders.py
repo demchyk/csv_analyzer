@@ -26,6 +26,10 @@ class Net_Folder:
     def keys(self):
         return self.__path + "/requirements/keys.txt"
 
+    @property
+    def nodes(self):
+        return self.__path + "/requirements/nodes.txt"
+
     @staticmethod
     def __check_requirements(path):
         formula = path + "/requirements/formula.txt"
@@ -52,7 +56,7 @@ class Net_Folder:
                     zip_ref = zipfile.ZipFile(os.path.join(address, file))
                     zip_ref.extractall(path + "/processed_files/")
                     zip_ref.close()
-        cls.__remove_directory_content(cur_path)
+        # cls.__remove_directory_content(cur_path)
 
     @staticmethod
     def __remove_directory_content(dir):
