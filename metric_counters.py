@@ -2,7 +2,8 @@ class ZTE_Object:
 
 	
 	def __init__(self, folder_object):
-		self.__files_path = folder_object.csv_path
+		# self.__files_path = folder_object.csv_path
+		self.__zipfiles_list = folder_object.zipfiles_list
 		self.__instructions_file = folder_object.formula
 		self.__primary_keys_file = folder_object.keys
 		self.__nodes_file = folder_object.nodes
@@ -69,9 +70,12 @@ class ZTE_Object:
 	@property
 	def headers(self):
 		return self.__headers
+	# @property
+	# def files_path(self):
+	# 	return self.__files_path
 	@property
-	def files_path(self):
-		return self.__files_path
+	def zipfiles_list(self):
+		return self.__zipfiles_list
 	@property
 	def nodes(self):
 		return self.__nodes

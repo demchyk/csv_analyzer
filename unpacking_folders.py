@@ -1,9 +1,6 @@
 import os
 import zipfile
 import shutil
-from numba import jit
-import time
-
 
 class Net_Folder:
     def __new__(cls, path):
@@ -15,7 +12,7 @@ class Net_Folder:
     def __init__(self, path):
         self.__path = path
         # self.__class__.__processing_input(self.__path)
-        self.__zipfile_list = self.__class__.__get_zipfile_list(self.__path)
+        self.__zipfiles_list = self.__class__.__get_zipfile_list(self.__path)
 
     @property
     def csv_path(self):
@@ -34,8 +31,8 @@ class Net_Folder:
         return self.__path + "/requirements/nodes.txt"
 
     @property
-    def zipfile_list(self):
-        return self.zipfile_list
+    def zipfiles_list(self):
+        return self.__zipfiles_list
 
     @staticmethod
     def __check_requirements(path):
@@ -86,8 +83,8 @@ class Net_Folder:
                 os.remove(path)
 
 
-time1 = time.time()
-lte = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/WCDMA")
-time2 = time.time()
-print(time2 - time1)
+# time1 = time.time()
+# lte = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/WCDMA")
+# time2 = time.time()
+# print(time2 - time1)
 
