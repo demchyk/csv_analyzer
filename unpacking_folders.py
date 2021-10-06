@@ -52,7 +52,6 @@ class Net_Folder:
             return False
 
     @classmethod
-    # @jit(forceobj=True, parallel=True)
     def __processing_input(cls, path):
         cur_path = path + "/input_data"
         for address, dirs, files in os.walk(cur_path):
@@ -65,12 +64,13 @@ class Net_Folder:
 
     @classmethod
     def __get_zipfile_list(cls, path):
-        rez = []
-        cur_path = path + "/input_data"
-        for address, dirs, files in os.walk(cur_path):
-            for file in files:
-                if file.endswith(".zip"):
-                    rez.append(os.path.join(address, file))
+        li = [f.path for f in os.scandir(path + "/input_data") if f.is_dir()]
+        rez = [[] for item in li]
+        for i in range(len(li)):
+            for address, dirs, files in os.walk(li[i]):
+                for file in files:
+                    if file.endswith(".zip"):
+                        rez[i].append(os.path.join(address, file))
         return rez
 
     @staticmethod
