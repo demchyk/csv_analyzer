@@ -24,9 +24,13 @@ def load_data():
 def dashboard():
 	if request.method == 'GET':
 		return render_template('dashboard.tpl')
-	select = str(request.form.get('zte_type'))
+	zte_type = str(request.form.get('zte_type'))
+	time_interval = str(request.form.get('daterange'))
+	agregation_type = str(request.form.get('agregation_type'))
+
 	# node_check = request.form.get('node_checkbox')
-	main.start_agg(select)
+	# main.start_agg(select)
+	return(f"<script>alert('{zte_type}, {time_interval}, {agregation_type}')</script>")
 		
 
 if __name__ == '__main__':

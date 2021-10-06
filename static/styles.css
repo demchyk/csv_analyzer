@@ -1,3 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Roboto+Slab:wght@400;700&display=swap');
+
+html {
+  height: 100%;
+  min-height:800px;
+}
+
+body {
+ /* background: url('https://i.pinimg.com/originals/34/8e/b4/348eb457205c7a746294ff5ce42a02e5.jpg');*/
+  background-position: center;
+  background-size:cover;
+  background-repeat:no-repeat;
+  text-align: center;
+ font-family: 'Noto Sans', sans-serif;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+h1{
+  font-weight:400;
+  padding-top:0;
+  margin-top:0;
+  font-family: 'Roboto Slab', serif;
+}
+
 input[type=checkbox]
 {
   /* Double-sized Checkboxes */
@@ -6,6 +35,93 @@ input[type=checkbox]
   -webkit-transform: scale(1.2); /* Safari and Chrome */
   -o-transform: scale(1.2); /* Opera */
 }
-form label {
-  padding-left: 7px;
+
+.btn:hover {
+  color: white;
+}
+
+
+/*input {
+  width: 100%;
+  margin: 7px 0px;
+  display: inline-block;
+  padding: 12px 25px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: 1px solid lightgrey;
+  font-size: 1em;
+  font-family:inherit;
+  background:white;
+}*/
+
+
+.datepicker {
+  width: 500px;
+  height: 50px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: 1px solid lightgrey;
+  text-align: center;
+
+
+}
+
+section {
+  padding: 50px ;
+  max-width: 1000px;
+  margin: 30px auto;
+  background:white;
+  background:rgba(255,255,255,0.9);
+  backdrop-filter:blur(10px);
+  box-shadow:0px 2px 10px rgba(0,0,0,0.3);
+  border-radius:5px;
+  transition:transform 0.2s ease-in-out;
+}
+
+#svg_form_time {
+  height: 20px;
+  max-width: 80%;
+  margin: 40px auto 20px;
+  display: block;
+}
+
+/*#svg_form_time circle,
+#svg_form_time rect {
+  fill: white;
+}*/
+
+
+.button {
+  background: #0d6efd;
+  border-radius: 5px;
+  padding: 15px 25px;
+  display: inline-block;
+  margin: 10px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  box-shadow:0px 2px 5px rgb(0,0,0,0.5);
+}
+
+.sub_button {
+  background: #0d6efd;
+  border-radius: 8px;
+  padding: 15px 25px;
+  display: inline-block;
+  margin: 10px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  box-shadow:0px 2px 5px rgb(0,0,0,0.5);
+
+}
+
+.disabled {
+  display:none;
+}
+
+p{
+  text-align:center;
+  margin-top:0;
+  font-size: 15pt;
 }
