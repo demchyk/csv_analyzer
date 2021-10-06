@@ -14,7 +14,7 @@ def start_filling(zte_type):
 	cur_folder = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/" + zte_type)
 	GSM = ZTE_Object(cur_folder)
 	db = DataBasa(GSM,zte_type)
-	db.result_to_sql()
+	db.result_to_pickle()
 	# agg = Aggregation(GSM,zte_type)
 	# agg.start_agg()
 

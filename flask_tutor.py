@@ -1,6 +1,6 @@
 from flask import *
 import main
-
+import time
 app = Flask(__name__)
 
 @app.route('/')
@@ -14,11 +14,14 @@ def load_data():
 
 	select = str(request.form.get('zte_type'))
 	try:
+		time1 = time.time()
 		main.start_filling(select)
 	except:
 		return render_template('load-data.tpl', error = 'Something wrong')
 	else:
-		return render_template('load-data.tpl', error = 'Database created')
+		
+		return f'{time.time() - time1}'
+
 
 @app.route('/dashboard', methods = ['GET','POST'])
 def dashboard():
@@ -34,4 +37,4 @@ def dashboard():
 		
 
 if __name__ == '__main__':
-	app.run(debug = True)
+	app.run(debug = True, threaded = True)

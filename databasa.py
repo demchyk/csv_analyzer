@@ -64,29 +64,18 @@ class DataBasa:
 		copy_list.remove(data_time_field_name)
 		return copy_list
 
-	def result_to_sql(self):	
+	def result_to_pickle(self):	
 		grouped_counters = self.__data_frame_processing(self.__counters,self.__primary_keys,self.__data_time_field_name,self.__counters_group_by_frequency,self.__zipfiles_list)
+		print('counters grouped')
 		try:
-			pd.read_pickle(self.__table_name)
+			pd.read_pickle(self.__table_name,compression = 'zip')
 		except:
 			pass
 		else:
-			grouped_counters = pd.concat([grouped_counters,pd.read_pickle(self.__table_name)])
-			grouped_counters.drop_duplicates(inplace = True)
+			grouped_counters = pd.concat([grouped_counters,pd.read_pickle(self.__table_name,compression = 'zip')]).drop_duplicates().reset_index(drop=True)
+			print('pickles grouped')
 		finally:
-			joblib.dump(grouped_counters,self.__table_name)
-		# table_check_df = pd.read_sql_table(self.__table_name,self.__connection)
-		# table_check_df.drop_duplicates(inplace = True)
-		# table_check_df.to_sql(self.__table_name,self.__connection,if_exists = 'replace', index = False)
-		# self.__cursor.execute(''' DROP TABLE IF EXISTS temp ''')
-		# grouped_counters = grouped_counters.groupby(['COLLECTTIME','SITEID'], as_index = False).sum()
-		# final_table = self.__calculate_final_table_with_metrics(self.__metrics,self.__counters,grouped_counters,self.__primary_keys)
-		# final_table.to_sql('level-2',self.__connection, if_exists = 'replace', index = False)
-		# final_table.to_csv('level-2.csv', index = False)
-		# grouped_counters = grouped_counters.groupby(['COLLECTTIME'], as_index = False).sum()
-		# final_table = self.__calculate_final_table_with_metrics(self.__metrics,self.__counters,grouped_counters.copy(),['COLLECTTIME','SITEID'])
-		# final_table.to_sql('level-3',self.__connection, if_exists = 'replace', index = False)
-		# final_table.to_csv('level-1.csv', index = False)
+			grouped_counters.to_pickle(self.__table_name,compression = 'zip')
 
 	@classmethod
 	def __data_frame_processing(cls,counters,primary_keys,data_time_field_name,counters_group_by_frequency,zip_list):
