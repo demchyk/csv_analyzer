@@ -15,7 +15,7 @@ class Aggregation:
 
 	@staticmethod
 	def __innit_connection_to_db():
-		engine = db.create_engine('sqlite:///DB/basa.db')
+		engine = db.create_engine('sqlite:///DB/basa.sqlite')
 		connection = engine.connect()
 		return connection
 
@@ -42,7 +42,7 @@ class Aggregation:
 		for key,value in metrics.items():
 			new_value = value
 			for counter in counters:
-				new_value = new_value.replace(counter,'df["' + counter + '"]')
+				new_value = new_value.replace(counter,'df["' + counter + '"].values')
 			new_dict[key] = new_value
 		print(*new_dict.items(), sep = "\n")
 		return new_dict

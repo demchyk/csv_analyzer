@@ -1,31 +1,22 @@
-import sqlalchemy as db
 import pandas as pd
 import numpy as np
-import os
 from zipfile import ZipFile
 import multipotok
 from functools import partial
+import joblib
 pd.set_option('use_inf_as_na', True)
 
 class DataBasa:
-
 	def __init__(self,zte_object,table_name):
 		self.__headers = zte_object.headers
 		self.__metrics = zte_object.metrics
 		self.__primary_keys = zte_object.primary_keys
 		self.__counters = zte_object.counters
-		self.__db_name = 'DB/basa.db'
-		self.__table_name = table_name
-		self.__connection =  self.__class__.__innit_connection_to_db()
+		self.__table_name = 'DB/' + table_name + '.pkl'
 		self.__zipfiles_list = zte_object.zipfiles_list
 		self.__data_time_field_name = self.__primary_keys[0]
 		self.__counters_group_by_frequency = 'H'
 
-	@staticmethod
-	def __innit_connection_to_db():
-		engine = db.create_engine('sqlite:///DB/basa.db')
-		connection = engine.connect()
-		return connection
 
 	@classmethod
 	def __fill_temp_data_frame_list(cls,counters,zip_list,primary_keys):
@@ -75,10 +66,18 @@ class DataBasa:
 
 	def result_to_sql(self):	
 		grouped_counters = self.__data_frame_processing(self.__counters,self.__primary_keys,self.__data_time_field_name,self.__counters_group_by_frequency,self.__zipfiles_list)
-		grouped_counters.to_sql(self.__table_name,self.__connection,if_exists = 'append', index = False)
-		table_check_df = pd.read_sql_table(self.__table_name,self.__connection)
-		table_check_df.drop_duplicates(inplace = True)
-		table_check_df.to_sql(self.__table_name,self.__connection,if_exists = 'replace', index = False)
+		try:
+			pd.read_pickle(self.__table_name)
+		except:
+			pass
+		else:
+			grouped_counters = pd.concat([grouped_counters,pd.read_pickle(self.__table_name)])
+			grouped_counters.drop_duplicates(inplace = True)
+		finally:
+			joblib.dump(grouped_counters,self.__table_name)
+		# table_check_df = pd.read_sql_table(self.__table_name,self.__connection)
+		# table_check_df.drop_duplicates(inplace = True)
+		# table_check_df.to_sql(self.__table_name,self.__connection,if_exists = 'replace', index = False)
 		# self.__cursor.execute(''' DROP TABLE IF EXISTS temp ''')
 		# grouped_counters = grouped_counters.groupby(['COLLECTTIME','SITEID'], as_index = False).sum()
 		# final_table = self.__calculate_final_table_with_metrics(self.__metrics,self.__counters,grouped_counters,self.__primary_keys)
@@ -88,7 +87,6 @@ class DataBasa:
 		# final_table = self.__calculate_final_table_with_metrics(self.__metrics,self.__counters,grouped_counters.copy(),['COLLECTTIME','SITEID'])
 		# final_table.to_sql('level-3',self.__connection, if_exists = 'replace', index = False)
 		# final_table.to_csv('level-1.csv', index = False)
-		self.__connection.close()
 
 	@classmethod
 	def __data_frame_processing(cls,counters,primary_keys,data_time_field_name,counters_group_by_frequency,zip_list):
