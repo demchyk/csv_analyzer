@@ -86,7 +86,7 @@ class Net_Folder:
         size_counter = 0
         for item in temp_li:
             size_counter += item[1]
-            if size_counter >= (1.5 * 10**9):
+            if size_counter >= 10**9:
                 rez.append([])
                 i += 1
                 rez[i].append(item[0])
@@ -106,6 +106,6 @@ class Net_Folder:
 
 
 # time1 = time.time()
-lte = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/WCDMA")
+# lte = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/WCDMA")
 # time2 = time.time()
 # print(time2 - time1)

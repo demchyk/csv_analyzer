@@ -11,8 +11,9 @@
 
 
 	<section>
+		<p>Choose cell technology</p>
 		<select required="" name= 'zte_type' class="form-select form-select-lg mb-3" aria-label=".form-select-lg example">
-			  <option value = '' disable selected>Choose cell technology</option>
+			  <option value = '' disable selected></option>
 			  <option value="WCDMA">WCDMA</option>
 			  <option value="LTE">LTE</option>
 			  <option value="GSM">GSM</option>
@@ -28,11 +29,21 @@
 
 
  	<section>
-	 	<select required="" name= 'agregation_type' class="form-select form-select-lg mb-3 " aria-label=".form-select-lg example">
-			  <option value = '' disable selected>Choose agregation type</option>
-			  <option value="Cell">Cell</option>
-			  <option value="Node">Node</option>
-			  <option value="Claster">Claster</option>
+ 		<p>Choose agregation cell type</p>
+	 	<select required="" name= 'aggregation_cell_type' class="form-select form-select-lg mb-3 " aria-label=".form-select-lg example">	
+			<option value = '' disable selected></option>
+			<option value="Cell">Cell</option>
+			<option value="Node">Node</option>
+			<option value="Claster">Claster</option>
+		</select>
+
+		<p>Choose agregation time type</p>
+	 	<select required="" name= 'aggregation_time_type' class="form-select form-select-lg mb-3 " aria-label=".form-select-lg example">	
+			<option value = '' disable selected></option>
+			<option value="H">Hour</option>
+			<option value="D">Day</option>
+			<option value="W">Week</option>
+			<option value="M">Month</option>
 		</select>
 	 </section>
 

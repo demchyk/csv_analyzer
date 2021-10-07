@@ -29,11 +29,12 @@ def dashboard():
 		return render_template('dashboard.tpl')
 	zte_type = str(request.form.get('zte_type'))
 	time_interval = str(request.form.get('daterange'))
-	agregation_type = str(request.form.get('agregation_type'))
+	aggregation_cell_type = str(request.form.get('aggregation_cell_type'))
+	aggregation_time_type = str(request.form.get('aggregation_time_type'))
 
 	# node_check = request.form.get('node_checkbox')
 	# main.start_agg(select)
-	return(f"<script>alert('{zte_type}, {time_interval}, {agregation_type}')</script>")
+	return(f"<script>alert('{zte_type}, {time_interval}, {aggregation_cell_type}, {aggregation_time_type}')</script>")
 		
 
 if __name__ == '__main__':
