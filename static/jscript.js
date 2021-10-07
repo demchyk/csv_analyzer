@@ -12,47 +12,32 @@ $(document).ready(function() {
 
 $(function() {
 
-  $('input[name="daterange"]').daterangepicker({
-      autoUpdateInput: false,
-      locale: {
-          cancelLabel: 'Clear'
-      }
-  });
+    var start = moment().subtract(29, 'days');
+    var end = moment();
 
-  $('input[name="daterange"]').on('apply.daterangepicker', function(ev, picker) {
-      $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
-  });
+    function cb(start, end) {
+        $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+        $('#reportrange input').val(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));
+    }
 
-  $('input[name="daterange"]').on('cancel.daterangepicker', function(ev, picker) {
-      $(this).val('');
-  });
+    $('#reportrange').daterangepicker({
+        startDate: start,
+        endDate: end,
+        ranges: {
+           'Today': [moment(), moment()],
+           'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+           'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+           'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+           'This Month': [moment().startOf('month'), moment().endOf('month')],
+           'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        }
+    }, cb);
+
+    cb(start, end);
 
 });
 
 
-// $(function myFunction() {
-//   // Get the checkbox
-//   var selectBox = document.getElementById("agg_type");
-//   // Get the output text
-//   var footnote = document.getElementById("footnote");
-
-//   // If the checkbox is checked, display the output text
-//   if (selectBox.value == "Claster"){
-//     footnote.style.display = "block";
-//   } else {
-//     footnote.style.display = "none";
-//   }
-// });
-
-// $(document).ready(function(){
-//   $(".submit").click(function(){
-//      var agg_type = $('.agg_type option:selected').val();
-//      if(agg_type == "Claster") {
-//         $(".msg").html("Please select a year");
-//         return false;
-//      }
-//   });
-// });
 
 	var base_color = "rgb(230,230,230)";
 	var active_color = "rgb(13, 110, 253)";
@@ -108,6 +93,7 @@ $(function() {
 	$('#svg_form_time circle').css('fill',base_color);
 	$("circle:nth-of-type(1)").css("fill", active_color);
 
+	$("#next").addClass("disabled");
 	 
 	$(".button").click(function () {
 	  $("#svg_form_time rect").css("fill", active_color);
@@ -144,12 +130,33 @@ $(function() {
 	  var currentSection = $("section:nth-of-type(" + child + ")");
 	  currentSection.fadeIn();
 	  currentSection.css('transform','translateX(0)');
-	 currentSection.prevAll('section').css('transform','translateX(-100px)');
+	  currentSection.prevAll('section').css('transform','translateX(-100px)');
 	  currentSection.nextAll('section').css('transform','translateX(100px)');
 	  $('section').not(currentSection).hide();
+	  if (child == 1){
+	  $("#next").addClass("disabled");
+		}
+	  if (child == 2){
+	  	$("#next").removeClass("disabled");
+	  }
+
+
 	});
 
+	$("#prev").click(function () {
+		$("#next").removeClass("disabled");
+	});
+
+
 });
+function get_button(element) {
+  if ($(element).text() != ''){
+  	$("#next").removeClass("disabled");
+  }
+  else{
+  	$("#next").addClass("disabled");
+  }
+}
 
 
 

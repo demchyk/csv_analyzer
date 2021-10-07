@@ -33,8 +33,8 @@ def dashboard():
 	aggregation_time_type = str(request.form.get('aggregation_time_type'))
 
 	# node_check = request.form.get('node_checkbox')
-	# main.start_agg(select)
-	return(f"<script>alert('{zte_type}, {time_interval}, {aggregation_cell_type}, {aggregation_time_type}')</script>")
+	main.start_agg(zte_type,time_interval,aggregation_time_type)
+	# return(f"<script>alert('{zte_type}, {time_interval}, {aggregation_cell_type}, {aggregation_time_type}')</script>")
 		
 
 if __name__ == '__main__':
