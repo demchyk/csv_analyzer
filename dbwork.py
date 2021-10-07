@@ -6,7 +6,7 @@ import sqlalchemy as db
 import os
 import time
 from zipfile import ZipFile
-import joblib
+import shutil
 
 
 # a = ['MAX(' + elem.strip() + ')' + 'AS ' + elem for elem in a.split(',')]
@@ -15,8 +15,8 @@ import joblib
 
 # df = pd.read_sql_query(q,conn)
 # df.fillna(0,inplace=True)
-engine = db.create_engine('sqlite:///DB/basa.sqlite')
-connection = engine.connect()
+# engine = db.create_engine('sqlite:///DB/basa.sqlite')
+# connection = engine.connect()
 # df = pd.read_sql_table('GSM',connection)
 # df = df[(df['COLLECTTIME'] >= '2021-09-15') & (df['COLLECTTIME'] <= '2021-09-19')]
 # df.to_sql('Timecheck', connection, if_exists = 'replace')
@@ -47,45 +47,45 @@ connection = engine.connect()
 # FGUCL340_G08A
 
 
-def __extract_counters_from_formulas():
-	with open('formula.txt','rt') as f:
-		formulas = [formulas_temp.strip() for formulas_temp in f.readlines() if not formulas_temp.isspace()]
-	all_counters = []
-	for formula in formulas:
-		expression = formula[formula.find('=') + 1:]
-		bad_words = '+-/*:.,()!@#$%^&'
-		for word in bad_words:
-			expression = expression.replace(word,' ')
-		text_list = [word.strip() for word in expression.split() if word[0].isalpha() and word[1:].isdigit()]
-		all_counters += (text_list)
-	return list(set(all_counters))
+# def __extract_counters_from_formulas():
+# 	with open('formula.txt','rt') as f:
+# 		formulas = [formulas_temp.strip() for formulas_temp in f.readlines() if not formulas_temp.isspace()]
+# 	all_counters = []
+# 	for formula in formulas:
+# 		expression = formula[formula.find('=') + 1:]
+# 		bad_words = '+-/*:.,()!@#$%^&'
+# 		for word in bad_words:
+# 			expression = expression.replace(word,' ')
+# 		text_list = [word.strip() for word in expression.split() if word[0].isalpha() and word[1:].isdigit()]
+# 		all_counters += (text_list)
+# 	return list(set(all_counters))
 
 
-primary_keys = ['COLLECTTIME','SITEID','BTSNAME']
-with open('nodes.txt') as f:
-	claster_list = [claster.strip() for claster in f.readlines()]
-claster_name = claster_list[0]
-claster = claster_list[1:]
-time1 = time.time()
-# df = pd.read_sql('tbchk','sqlite:///DB/basa.sqlite',chunksize = 200000)
-# new_df = pd.concat(df)
-# new_df.to_pickle('dframe.pkl')
-df = pd.read_pickle('DB/test.pkl',compression = 'zip')
-print(time.time() - time1)
-# df = pd.concat([df]*2)
+# primary_keys = ['COLLECTTIME','SITEID','BTSNAME']
+# with open('nodes.txt') as f:
+# 	claster_list = [claster.strip() for claster in f.readlines()]
+# claster_name = claster_list[0]
+# claster = claster_list[1:]
+# time1 = time.time()
+# # df = pd.read_sql('tbchk','sqlite:///DB/basa.sqlite',chunksize = 200000)
+# # new_df = pd.concat(df)
+# # new_df.to_pickle('dframe.pkl')
+# df = pd.read_pickle('DB/test.pkl',compression = 'zip')
 # print(time.time() - time1)
-# joblib.dump(df,'DB/test.pkl')
-df.to_sql('basa2',connection,if_exists = 'replace')
-# df.to_pickle('DB/test.pkl',compression = 'zip')
-print(time.time() - time1)
-# df.to_sql('tbchk',conn,if_exists = 'append', index = False)
+# # df = pd.concat([df]*2)
+# # print(time.time() - time1)
+# # joblib.dump(df,'DB/test.pkl')
+# df.to_sql('basa2',connection,if_exists = 'replace')
+# # df.to_pickle('DB/test.pkl',compression = 'zip')
+# print(time.time() - time1)
+# # df.to_sql('tbchk',conn,if_exists = 'append', index = False)
 
-
+shutil.copyfile(r'DB/input_data.zip',r'DB/LTE_copy.pkl')
 
 # df = df[df[claster_name].isin(claster)].groupby(claster_name, as_index = False).sum()
 
 # df.to_sql('tbchk',conn,if_exists = 'replace', index = False)
-connection.close()
+# connection.close()
 
 
 

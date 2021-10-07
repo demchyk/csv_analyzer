@@ -3,7 +3,8 @@ import numpy as np
 from zipfile import ZipFile
 import multipotok
 from functools import partial
-import joblib
+import shutil
+import os
 pd.set_option('use_inf_as_na', True)
 
 class DataBasa:
@@ -13,7 +14,8 @@ class DataBasa:
 		self.__primary_keys = zte_object.primary_keys
 		self.__counters = zte_object.counters
 		self.__table_name = 'DB/' + table_name + '.pkl'
-		self.__zipfiles_list = zte_object.zipfiles_list
+		self.__table_temp_name = 'DB/' + table_name + '_reserved.pkl'
+		self.__zipfiles_list_list = zte_object.zipfiles_list
 		self.__data_time_field_name = self.__primary_keys[0]
 		self.__counters_group_by_frequency = 'H'
 
@@ -64,18 +66,25 @@ class DataBasa:
 		copy_list.remove(data_time_field_name)
 		return copy_list
 
-	def result_to_pickle(self):	
-		grouped_counters = self.__data_frame_processing(self.__counters,self.__primary_keys,self.__data_time_field_name,self.__counters_group_by_frequency,self.__zipfiles_list)
-		print('counters grouped')
+	def result_to_pickle(self):
 		try:
-			pd.read_pickle(self.__table_name,compression = 'zip')
+			shutil.copyfile(f'{self.__table_name}',f'{self.__table_temp_name}')
+			for zip_file_list in self.__zipfiles_list_list:
+				grouped_counters = self.__data_frame_processing(self.__counters,self.__primary_keys,self.__data_time_field_name,self.__counters_group_by_frequency,zip_file_list)
+				try:
+					pd.read_pickle(self.__table_name,compression = 'zip')
+				except:
+					pass
+				else:
+					grouped_counters = pd.concat([grouped_counters,pd.read_pickle(self.__table_name,compression = 'zip')]).drop_duplicates().reset_index(drop=True)
+				finally:
+					grouped_counters.to_pickle(self.__table_name,compression = 'zip')
+
 		except:
-			pass
+			os.remove(f'{self.__table_name}')
+			os.rename(f'{self.__table_temp_name}',f'{self.__table_name}')
 		else:
-			grouped_counters = pd.concat([grouped_counters,pd.read_pickle(self.__table_name,compression = 'zip')]).drop_duplicates().reset_index(drop=True)
-			print('pickles grouped')
-		finally:
-			grouped_counters.to_pickle(self.__table_name,compression = 'zip')
+			os.remove(f'{self.__table_temp_name}')
 
 	@classmethod
 	def __data_frame_processing(cls,counters,primary_keys,data_time_field_name,counters_group_by_frequency,zip_list):
