@@ -67,24 +67,18 @@ class DataBasa:
 		return copy_list
 
 	def result_to_pickle(self):
-		try:
-			shutil.copyfile(f'{self.__table_name}',f'{self.__table_temp_name}')
-			for zip_file_list in self.__zipfiles_list_list:
-				grouped_counters = self.__data_frame_processing(self.__counters,self.__primary_keys,self.__data_time_field_name,self.__counters_group_by_frequency,zip_file_list)
-				try:
-					pd.read_pickle(self.__table_name,compression = 'zip')
-				except:
-					pass
-				else:
-					grouped_counters = pd.concat([grouped_counters,pd.read_pickle(self.__table_name,compression = 'zip')]).drop_duplicates().reset_index(drop=True)
-				finally:
-					grouped_counters.to_pickle(self.__table_name,compression = 'zip')
 
-		except:
-			os.remove(f'{self.__table_name}')
-			os.rename(f'{self.__table_temp_name}',f'{self.__table_name}')
-		else:
-			os.remove(f'{self.__table_temp_name}')
+		for zip_file_list in self.__zipfiles_list_list:
+			grouped_counters = self.__data_frame_processing(self.__counters,self.__primary_keys,self.__data_time_field_name,self.__counters_group_by_frequency,zip_file_list)
+			try:
+				pd.read_pickle(self.__table_name,compression = 'zip')
+			except:
+				pass
+			else:
+				grouped_counters = pd.concat([grouped_counters,pd.read_pickle(self.__table_name,compression = 'zip')]).drop_duplicates().reset_index(drop=True)
+			finally:
+				grouped_counters.to_pickle(self.__table_name,compression = 'zip')
+
 
 	@classmethod
 	def __data_frame_processing(cls,counters,primary_keys,data_time_field_name,counters_group_by_frequency,zip_list):
