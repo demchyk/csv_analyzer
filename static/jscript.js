@@ -150,7 +150,7 @@ $(function() {
 
 });
 function get_button(element) {
-  if ($(element).text() != ''){
+  if ($(element).val() != ''){
   	$("#next").removeClass("disabled");
   }
   else{

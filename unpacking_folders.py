@@ -1,7 +1,7 @@
 import os
 import zipfile
 import shutil
-
+import time
 
 class Net_Folder:
     def __new__(cls, path):
@@ -28,8 +28,8 @@ class Net_Folder:
         return self.__path + "/requirements/keys.txt"
 
     @property
-    def nodes(self):
-        return self.__path + "/requirements/nodes.txt"
+    def claster(self):
+        return self.__path + "/requirements/claster.txt"
 
     @property
     def zipfiles_list(self):
@@ -86,13 +86,14 @@ class Net_Folder:
         size_counter = 0
         for item in temp_li:
             size_counter += item[1]
-            if size_counter >= 10**9:
+            if size_counter >= ((10**9) / 10):
                 rez.append([])
                 i += 1
                 rez[i].append(item[0])
                 size_counter = 0
             else:
                 rez[i].append(item[0])
+        print('ziplist by size ---' , time.ctime())
         return rez
 
     @staticmethod

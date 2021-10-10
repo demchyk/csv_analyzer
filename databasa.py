@@ -3,11 +3,10 @@ import numpy as np
 from zipfile import ZipFile
 import multipotok
 from functools import partial
-import shutil
-import os
 pd.set_option('use_inf_as_na', True)
 
 class DataBasa:
+
 	def __init__(self,zte_object,table_name):
 		self.__headers = zte_object.headers
 		self.__metrics = zte_object.metrics
@@ -18,7 +17,7 @@ class DataBasa:
 		self.__zipfiles_list_list = zte_object.zipfiles_list
 		self.__data_time_field_name = self.__primary_keys[0]
 		self.__counters_group_by_frequency = 'H'
-
+		self.__cell_name_dict_list = []
 
 	@classmethod
 	def __fill_temp_data_frame_list(cls,counters,zip_list,primary_keys):
@@ -59,7 +58,6 @@ class DataBasa:
 			new_dict[key] = new_value
 		return new_dict
 
-
 	@staticmethod
 	def __remover_collecttime_from_primary_keys(primary_keys,data_time_field_name):
 		copy_list = primary_keys[:]
@@ -67,21 +65,20 @@ class DataBasa:
 		return copy_list
 
 	def result_to_pickle(self):
-
+		grouped_counters_list = []
 		for zip_file_list in self.__zipfiles_list_list:
-			grouped_counters = self.__data_frame_processing(self.__counters,self.__primary_keys,self.__data_time_field_name,self.__counters_group_by_frequency,zip_file_list)
-			try:
-				pd.read_pickle(self.__table_name,compression = 'zip')
-			except:
-				pass
-			else:
-				grouped_counters = pd.concat([grouped_counters,pd.read_pickle(self.__table_name,compression = 'zip')]).drop_duplicates().reset_index(drop=True)
-			finally:
-				grouped_counters.to_pickle(self.__table_name,compression = 'zip')
-
+			grouped_counters = self.__data_frame_processing(self.__counters,self.__primary_keys,self.__data_time_field_name,self.__counters_group_by_frequency,zip_file_list,self.__table_name)
+			grouped_counters_list.append(grouped_counters)
+		new_pickle = pd.concat(grouped_counters_list)
+		try:
+			new_pickle = pd.concat([new_pickle,pd.read_pickle(self.__table_name,compression = 'zip')]).drop_duplicates().reset_index(drop=True)
+		except:
+			pass
+		finally:
+			new_pickle.to_pickle(self.__table_name,compression = 'zip')
 
 	@classmethod
-	def __data_frame_processing(cls,counters,primary_keys,data_time_field_name,counters_group_by_frequency,zip_list):
+	def __data_frame_processing(cls,counters,primary_keys,data_time_field_name,counters_group_by_frequency,zip_list,table_name):
 		grouped_counters = cls.__generate_concated_temp_data_frame(counters,zip_list,primary_keys)
 		grouped_counters = cls.__group_data_frame_by_primary_keys(grouped_counters,primary_keys)
 		grouped_counters[data_time_field_name] = cls.__set_data_time_format_for_dataframe(data_time_field_name,grouped_counters)
@@ -117,17 +114,4 @@ class DataBasa:
 			grouped_counters[key] = np.around(eval(value),2)
 		final_table = grouped_counters[primary_keys + list(metrics.keys())]
 		return final_table
-
-	@staticmethod
-	def __get_useful_values_from_csv(file,primary_keys,counters):	
-		file_header_values = pd.read_csv(file, nrows = 0).columns.tolist()
-		if not all(key in file_header_values for key in primary_keys):
-			return False
-		else:
-			useful_values = []
-			for value in file_header_values:
-				if value in counters:
-					useful_values.append(value)
-			return useful_values
-
 

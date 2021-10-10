@@ -13,6 +13,6 @@
 	  <option value="GSM">GSM</option>
 	</select>
  	<br>
-	<button type="submit" class="btn btn-primary btn-lg position-relative top-100 start-50 translate-middle-x">Submit</button> 
+	<button type="submit" class="btn btn-primary btn-lg position-relative top-100 translate-middle-x">Submit</button> 
 </form>
 {% endblock%}

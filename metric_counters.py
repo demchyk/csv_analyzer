@@ -6,12 +6,11 @@ class ZTE_Object:
 		self.__zipfiles_list = folder_object.zipfiles_list
 		self.__instructions_file = folder_object.formula
 		self.__primary_keys_file = folder_object.keys
-		self.__nodes_file = folder_object.nodes
+		self.__claster_file = folder_object.claster
 		self.__counters = self.__class__.__extract_counters_from_formulas(self.__instructions_file)
 		self.__metrics = self.__class__.__extract_metrics_from_file(self.__instructions_file)
 		self.__primary_keys = self.__class__.__extract_primary_keys_from_file(self.__primary_keys_file)
-		self.__nodes = self.__class__.__extract_nodes_from_file(self.__nodes_file)[1:]
-		self.__nodes_key = self.__class__.__extract_nodes_from_file(self.__nodes_file)[0]
+		self.__claster_name,self.__claster_values = self.__class__.__extract_claster_from_file(self.__claster_file)
 		self.__headers = ','.join(self.__primary_keys + self.__counters)
 
 
@@ -28,10 +27,10 @@ class ZTE_Object:
 		return primary_keys
 
 	@staticmethod
-	def __extract_nodes_from_file(nodes_file):
+	def __extract_claster_from_file(nodes_file):
 		with open(nodes_file,'rt') as f:
 			nodes = [nodes_temp.strip() for nodes_temp in f.readlines() if not nodes_temp.isspace()]
-		return nodes	
+		return nodes[0],nodes[1:]	
 
 
 	@classmethod
@@ -70,15 +69,12 @@ class ZTE_Object:
 	@property
 	def headers(self):
 		return self.__headers
-	# @property
-	# def files_path(self):
-	# 	return self.__files_path
 	@property
 	def zipfiles_list(self):
 		return self.__zipfiles_list
 	@property
-	def nodes(self):
-		return self.__nodes
+	def claster_name(self):
+		return self.__claster_name
 	@property
-	def nodes_key(self):
-		return self.__nodes_key
+	def claster_values(self):
+		return self.__claster_values

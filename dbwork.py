@@ -80,7 +80,7 @@ import shutil
 # print(time.time() - time1)
 # # df.to_sql('tbchk',conn,if_exists = 'append', index = False)
 
-shutil.copyfile(r'DB/input_data.zip',r'DB/LTE_copy.pkl')
+pd.read_pickle('DB/WCDMA.pkl', compression = 'zip').to_csv('check.csv')
 
 # df = df[df[claster_name].isin(claster)].groupby(claster_name, as_index = False).sum()
 
