@@ -26,8 +26,9 @@ def dashboard():
 	time_interval = str(request.form.get('daterange'))
 	aggregation_type = str(request.form.get('aggregation_cell_type'))
 	aggregation_time_type = str(request.form.get('aggregation_time_type'))
+	claster_check = str(request.form.get('cluster_check'))
 	try:
-		engine.start_agg(zte_type,time_interval,aggregation_time_type,aggregation_type)
+		engine.start_agg(zte_type,time_interval,aggregation_time_type,aggregation_type,claster_check)
 		return render_template('export_csv.tpl', error = 'Success')
 	except:
-		engine.start_agg(zte_type,time_interval,aggregation_time_type,aggregation_type)
+		engine.start_agg(zte_type,time_interval,aggregation_time_type,aggregation_type,claster_check)

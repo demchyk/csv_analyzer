@@ -20,16 +20,16 @@ class DataBasa:
 		self.__cell_name_dict_list = []
 
 	@classmethod
-	def __fill_temp_data_frame_list(cls,counters,zip_list,primary_keys):
+	def _fill_temp_data_frame_list(cls,counters,zip_list,primary_keys):
 		df_list = []
-		read_zip_partial = partial(cls.__read_zip,primary_keys,counters)
+		read_zip_partial = partial(cls._read_zip,primary_keys,counters)
 		df_list_of_list = multipotok.parmap(read_zip_partial,zip_list)
 		for df_list_elem in df_list_of_list:
 			df_list += df_list_elem
 		return df_list
 
 	@staticmethod
-	def __read_csv(file,primary_keys,counters):
+	def _read_csv(file,primary_keys,counters):
 		data_frame_from_csv = pd.read_csv(file)
 		df_columns = data_frame_from_csv.columns.tolist()
 		if not all(key in df_columns for key in primary_keys):
@@ -42,9 +42,9 @@ class DataBasa:
 			pass
 
 	@classmethod
-	def __read_zip(cls,primary_keys,counters,file):
+	def _read_zip(cls,primary_keys,counters,file):
 		try:
-			return [cls.__read_csv(ZipFile(file).open(i),primary_keys,counters) for i in ZipFile(file).namelist()]
+			return [cls._read_csv(ZipFile(file).open(i),primary_keys,counters) for i in ZipFile(file).namelist()]
 		except:
 			pass
 
@@ -87,7 +87,7 @@ class DataBasa:
 
 	@classmethod
 	def __generate_concated_temp_data_frame(cls,counters,zip_list,primary_keys):
-		temp_data_frame_list = cls.__fill_temp_data_frame_list(counters,zip_list,primary_keys)
+		temp_data_frame_list = cls._fill_temp_data_frame_list(counters,zip_list,primary_keys)
 		concated_data_frames = pd.concat(temp_data_frame_list)
 		return concated_data_frames
 

@@ -30,10 +30,15 @@ h1{
 input[type=checkbox]
 {
   /* Double-sized Checkboxes */
-  -ms-transform: scale(1.2); /* IE */
-  -moz-transform: scale(1.2); /* FF */
-  -webkit-transform: scale(1.2); /* Safari and Chrome */
-  -o-transform: scale(1.2); /* Opera */
+  -ms-transform: scale(1.25); /* IE */
+  -moz-transform: scale(1.25); /* FF */
+  -webkit-transform: scale(1.25); /* Safari and Chrome */
+  -o-transform: scale(1.25); /* Opera */
+}
+
+.checkbox label span{
+padding-left: 6px;
+font-size: 16px;
 }
 
 .btn:hover {
@@ -67,7 +72,7 @@ input[type=checkbox]
 }
 
 section {
-  padding: 50px ;
+  padding: 45px ;
   max-width: 1000px;
   margin: 30px auto;
   background:white;

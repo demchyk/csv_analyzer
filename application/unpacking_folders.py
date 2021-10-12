@@ -29,7 +29,7 @@ class Net_Folder:
 
     @property
     def claster(self):
-        return self.__path + "/requirements/claster.txt"
+        return self.__path + "/requirements/cluster.txt"
 
     @property
     def zipfiles_list(self):

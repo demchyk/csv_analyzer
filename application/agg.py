@@ -3,7 +3,7 @@ import numpy as np
 
 class Aggregation:
 
-	def __init__(self,zte_object,table_name,date_range,aggregation_time_type,aggregation_type):
+	def __init__(self,zte_object,table_name,date_range,aggregation_time_type,aggregation_type,claster_check):
 		self.__metrics = zte_object.metrics
 		self.__primary_keys = zte_object.primary_keys
 		self.__counters = zte_object.counters
@@ -16,7 +16,8 @@ class Aggregation:
 		self.__aggregation_type = aggregation_type
 		self.__claster_name = zte_object.claster_name
 		self.__claster_values = zte_object.claster_values
-		self.__node_dict = {'DB/GSM.pkl':'SITEID','DB/LTE.pkl':'ENODEBID','DB/WCDMA.pkl':'NODEBID'}
+		self.__claster_check = claster_check
+		self.__node_dict = {'DB/GSMV3.pkl':'SITEID','DB/LTE.pkl':'ENODEBID','DB/WCDMA.pkl':'NODEBID'}
 
 	@staticmethod
 	def __create_df_from_pickle(table_name):
@@ -24,12 +25,11 @@ class Aggregation:
 
 	@classmethod
 	def __agg_by_time(cls,df,primary_keys,data_time_field_name,frequency,metrics,counters):
-		if not frequency == 'All':
-			cutted_primary_keys = cls.__remover_collecttime_from_primary_keys(primary_keys,data_time_field_name)
-			df = df.groupby([pd.Grouper(key = data_time_field_name, freq = frequency)] + cutted_primary_keys).sum()
-			df.reset_index(inplace = True)
-			return df
-		return df.groupby(primary_keys, as_index = False).sum()
+		cutted_primary_keys = cls.__remover_collecttime_from_primary_keys(primary_keys,data_time_field_name)
+		df = df.groupby([pd.Grouper(key = data_time_field_name, freq = frequency)] + cutted_primary_keys).sum()
+		df.reset_index(inplace = True)
+		return df
+
 
 	@staticmethod
 	def __remover_collecttime_from_primary_keys(primary_keys,data_time_field_name):
@@ -72,11 +72,22 @@ class Aggregation:
 			node_name = node_dict[table_name]
 			return df.groupby([data_time_field_name,node_name],as_index = False).sum()
 		if aggregation_type == 'CLASTER':
-			return df[df[claster_name].isin(claster_values)].groupby([data_time_field_name,claster_name], as_index = False).sum()
+			return df[df[claster_name].isin(claster_values)].groupby(data_time_field_name).sum()
+			# new_df['CLUSTER'] = 'CLUSTER'
+			# return new_df
+	@staticmethod
+	def __apply_claster(df,claster_check,claster_name,claster_values):
+		if claster_check == 'cluster':
+			return df[df[claster_name].isin(claster_values)]
+		return df
+
+
+
 
 	def start_agg(self):
 		dframe = self.__agg_by_date_interval(self.__df.copy(),self.__date_range,self.__data_time_field_name)
 		dframe = self.__agg_by_time(dframe,self.__primary_keys,self.__data_time_field_name,self.__aggregation_time_type,self.__metrics,self.__counters)
+		dframe = self.__apply_claster(dframe,self.__claster_check,self.__claster_name,self.__claster_values)
 		dframe = self.__agg_by_type(dframe,self.__aggregation_type,self.__node_dict,self.__table_name,self.__data_time_field_name,self.__claster_name,self.__claster_values)
 		dframe = self.__swap_counters_for_metrics(dframe,self.__metrics,self.__counters)
 		dframe.to_csv(self.__report_file_name)

@@ -15,8 +15,14 @@
 			  <option value = ''selected></option>
 			  <option value="WCDMA">WCDMA</option>
 			  <option value="LTE">LTE</option>
-			  <option value="GSM">GSM</option>
+			  <option value="GSMV3">GSMV3</option>
 		</select>
+		<br>
+		<div class="checkbox">
+			<label>
+   	 			<input type="checkbox" name="cluster_check" value="cluster"> <span>Analyze only nodes from clsuster.txt</span>
+			</label>
+		</div>
 	</section>
 
 
@@ -34,7 +40,7 @@
 			<option value = '' disable selected></option>
 			<option value="CELL">Cell</option>
 			<option value="NODE">Node</option>
-			<option value="CLASTER">Claster</option>
+			<option value="CLASTER">Whole Claster</option>
 		</select>
 
 		<p>Choose agregation time type</p>
@@ -44,7 +50,7 @@
 			<option value="D">Day</option>
 			<option value="7D">Week</option>
 			<option value="M">Month</option>
-			<option value="All">All</option>
+			<option value="Y">Year</option>
 		</select>
 	 </section>
 
