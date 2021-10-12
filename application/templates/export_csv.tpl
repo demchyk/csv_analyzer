@@ -44,6 +44,7 @@
 			<option value="D">Day</option>
 			<option value="7D">Week</option>
 			<option value="M">Month</option>
+			<option value="All">All</option>
 		</select>
 	 </section>
 

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from zipfile import ZipFile
-import multipotok
+from . import multipotok
 from functools import partial
 pd.set_option('use_inf_as_na', True)
 

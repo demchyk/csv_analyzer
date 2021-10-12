@@ -1,10 +1,10 @@
-from flask import *
-import main
-app = Flask(__name__)
+from flask import current_app as app
+from flask import render_template,request
+from . import engine
 
 @app.route('/')
 def index():
-	return render_template('main.tpl')
+	return render_template('index.tpl')
 
 @app.route('/load-data', methods = ['GET','POST'])
 def load_data():
@@ -13,12 +13,10 @@ def load_data():
 
 	select = str(request.form.get('zte_type'))
 	try:
-		main.start_filling(select)
+		engine.start_filling(select)
 		return render_template('load-data.tpl', error = 'Success')
 	except:
 		return render_template('load-data.tpl', error = 'Missing some files / folders')
-
-
 
 @app.route('/export-to-csv', methods = ['GET','POST'])
 def dashboard():
@@ -29,11 +27,7 @@ def dashboard():
 	aggregation_type = str(request.form.get('aggregation_cell_type'))
 	aggregation_time_type = str(request.form.get('aggregation_time_type'))
 	try:
-		main.start_agg(zte_type,time_interval,aggregation_time_type,aggregation_type)
+		engine.start_agg(zte_type,time_interval,aggregation_time_type,aggregation_type)
 		return render_template('export_csv.tpl', error = 'Success')
 	except:
-		main.start_agg(zte_type,time_interval,aggregation_time_type,aggregation_type)
-
-		
-if __name__ == '__main__':
-	app.run(debug = True, threaded = True)
+		engine.start_agg(zte_type,time_interval,aggregation_time_type,aggregation_type)

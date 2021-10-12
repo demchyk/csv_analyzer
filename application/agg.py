@@ -24,10 +24,12 @@ class Aggregation:
 
 	@classmethod
 	def __agg_by_time(cls,df,primary_keys,data_time_field_name,frequency,metrics,counters):
-		cutted_primary_keys = cls.__remover_collecttime_from_primary_keys(primary_keys,data_time_field_name)
-		df = df.groupby([pd.Grouper(key = data_time_field_name, freq = frequency)] + cutted_primary_keys).sum()
-		df.reset_index(inplace = True)
-		return df
+		if not frequency == 'All':
+			cutted_primary_keys = cls.__remover_collecttime_from_primary_keys(primary_keys,data_time_field_name)
+			df = df.groupby([pd.Grouper(key = data_time_field_name, freq = frequency)] + cutted_primary_keys).sum()
+			df.reset_index(inplace = True)
+			return df
+		return df.groupby(primary_keys, as_index = False).sum()
 
 	@staticmethod
 	def __remover_collecttime_from_primary_keys(primary_keys,data_time_field_name):
