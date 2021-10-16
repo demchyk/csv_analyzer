@@ -86,7 +86,7 @@ class Net_Folder:
         size_counter = 0
         for item in temp_li:
             size_counter += item[1]
-            if size_counter >= ((10**9) / 10):
+            if size_counter >= ((10**9)):
                 rez.append([])
                 i += 1
                 rez[i].append(item[0])

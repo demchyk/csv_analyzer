@@ -137,9 +137,10 @@ $(function() {
 	  if (child == 1){
 	  $("#next").addClass("disabled");
 		}
-	  if (child == 2){
+	  if (child == 2 && child < length){
 	  	$("#next").removeClass("disabled");
 	  }
+
 
 
 	});

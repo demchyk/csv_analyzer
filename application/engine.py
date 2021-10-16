@@ -12,8 +12,14 @@ def start_filling(zte_type):
 	# agg = Aggregation(GSM,zte_type)
 	# agg.start_agg()
 
-def start_agg(zte_type,time_interval,aggregation_time_type,aggregation_type,claster_check):
+def start_agg_to_csv(zte_type,time_interval,claster_check,aggregation_time_type,aggregation_type):
 	cur_folder = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/" + zte_type)
 	ZTE = ZTE_Object(cur_folder)	
-	agg = Aggregation(ZTE,zte_type,time_interval,aggregation_time_type,aggregation_type,claster_check)
-	agg.start_agg()
+	agg = Aggregation(ZTE,zte_type,time_interval,claster_check,aggregation_time_type,aggregation_type)
+	agg.aggregate_to_csv()
+
+def start_agg_to_dashboard_pickle(zte_type,time_interval,claster_check):
+	cur_folder = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/" + zte_type)
+	ZTE = ZTE_Object(cur_folder)	
+	aggr = Aggregation(ZTE,zte_type,time_interval,claster_check)
+	aggr.aggregate_to_dataframe()

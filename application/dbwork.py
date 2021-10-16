@@ -80,7 +80,23 @@ import shutil
 # print(time.time() - time1)
 # # df.to_sql('tbchk',conn,if_exists = 'append', index = False)
 
-pd.read_pickle('DB/WCDMA.pkl', compression = 'zip').to_csv('check.csv')
+# df = pd.read_pickle('/Users/denis/Programming/csv_analyzer/DB/WCDMA.pkl', compression = 'zip')
+# df = df.groupby([pd.Grouper(key = 'COLLECTTIME', freq = 'D')] + ['NODEBID','CELLID','CELLNAME'],dropna = False).sum()
+# df.reset_index(inplace = True)
+# # df  = df.groupby(['COLLECTTIME','NODEBID','CELLID'],as_index = False).sum()
+# df.to_csv('check.csv')
+# print(df.attrs)
+
+
+# df = pd.read_pickle('/Users/denis/Programming/csv_analyzer/DB/WCDMA.pkl', compression = 'zip')
+# df2 = df[['CELLID','CELLNAME']].dropna().drop_duplicates()
+# # df.drop(['CELLNAME'],axis = 1,inplace = True)
+# # df = df.merge(df2,how = 'left')
+# df = df.groupby([pd.Grouper(key = 'COLLECTTIME', freq = 'D')] + ['NODEBID','CELLID','CELLNAME']).sum()
+# df.to_csv('check2.csv')
+# df = pd.read_csv('some.csv')
+print(os.path.getsize('some.csv'))
+
 
 # df = df[df[claster_name].isin(claster)].groupby(claster_name, as_index = False).sum()
 
