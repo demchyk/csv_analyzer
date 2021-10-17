@@ -26,7 +26,8 @@ class DataBasa:
 		read_zip_partial = partial(cls._read_zip,primary_keys,counters,table_name)
 		df_list_of_list = multipotok.parmap(read_zip_partial,zip_list)
 		for df_list_elem in df_list_of_list:
-			df_list += df_list_elem
+			if df_list_elem:
+				df_list += df_list_elem
 		return df_list
 
 	@staticmethod

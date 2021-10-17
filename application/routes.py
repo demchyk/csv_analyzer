@@ -1,6 +1,7 @@
 from flask import current_app as app
 from flask import render_template,request,redirect
 from . import engine
+from . plotlydash import dashboard
 import time
 
 @app.route('/')
@@ -44,10 +45,15 @@ def dashboard_init():
 	time_interval = str(request.form.get('daterange'))
 	claster_check = str(request.form.get('cluster_check'))
 	try:
-		engine.start_agg_to_dashboard_pickle(zte_type,time_interval,claster_check)
-		return render_template('dashboard.tpl')
+		engine.start_agg_to_dashboard_pickle(zte_type,time_interval,claster_check)		
+		dashboard.init_dashboard(app)
+		return redirect('/dashapp')
 	except:
 		engine.start_agg_to_dashboard_pickle(zte_type,time_interval,claster_check)
+		dashboard.init_dashboard(app)
+
+
+
 
 # @app.route('/' , methods=['GET', 'POST'])
 # def landing_page():
