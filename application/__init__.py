@@ -7,8 +7,8 @@ def init_app():
 	with app.app_context():
 
 		from . import routes
-		from .plotlydash.dashboard import init_dashboard
-		app = init_dashboard(app)
+		# from .plotlydash.dashboard import init_dashboard
+		# app = init_dashboard(app)
 
 		return app
 		
