@@ -14,13 +14,14 @@ def load_data():
 		return render_template('load-data.tpl')
 	time1 = time.time()
 	select = str(request.form.get('zte_type'))
-	engine.start_filling(select)
-	# try:
-	# 	engine.start_filling(select)
-	# 	return render_template('load-data.tpl', error = 'Success')
-	# except:
-	# 	return render_template('load-data.tpl', error = 'Missing some files / folders')
-	print('Super algorithm has dealed with it in just ',time.time() - time1,' seconds')
+	# engine.start_filling(select)
+	try:
+		engine.start_filling(select)
+		print('Super algorithm has dealed with it in just ',time.time() - time1,' seconds')
+		return render_template('load-data.tpl', error = 'Success')
+	except:
+		return render_template('load-data.tpl', error = 'Missing some files / folders')
+	
 
 @app.route('/export-to-csv', methods = ['GET','POST'])
 def export_to_csv():
