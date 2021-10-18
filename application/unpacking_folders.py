@@ -12,8 +12,7 @@ class Net_Folder:
 
     def __init__(self, path):
         self.__path = path
-        # self.__class__.__processing_input(self.__path)
-        self.__zipfiles_list = self.__class__.__get_ziplist_by_size(self.__path)
+        self.__zipfiles_list = self.__class__.__get_ziplist_by_size(self.__get_input_files_path(self.__path))
 
     @property
     def csv_path(self):
@@ -39,10 +38,18 @@ class Net_Folder:
     def __check_requirements(path):
         formula = path + "/requirements/formula.txt"
         keys = path + "/requirements/keys.txt"
-        if os.path.isfile(formula) and os.path.isfile(keys):
+        input_files_path = path + '/requirements/datapath.txt'
+        cluster = path + '/requirements/cluster.txt'
+        if os.path.isfile(formula) and os.path.isfile(keys) and os.path.isfile(input_files_path) and os.path.isfile(cluster):
             return True
         else:
             return False
+
+    @staticmethod
+    def __get_input_files_path(path):
+        f = open(path + '/requirements/datapath.txt')
+        return f.readline().strip()
+
 
     @staticmethod
     def __check_input_data(path):
@@ -64,7 +71,7 @@ class Net_Folder:
     @classmethod
     def __get_ziplist_by_folder(cls, path):
         li = [f.path for f in os.scandir(
-            path + "/input_data") if f.is_dir() and os.listdir(f)]
+            path) if f.is_dir() and os.listdir(f)]
         rez = [[] for item in li]
         for i in range(len(li)):
             for address, dirs, files in os.walk(li[i]):
@@ -76,7 +83,7 @@ class Net_Folder:
     @classmethod
     def __get_ziplist_by_size(cls, path):
         temp_li = []
-        for address, dirs, files in os.walk(path + "/input_data"):
+        for address, dirs, files in os.walk(path):
             for file in files:
                 if file.endswith(".zip"):
                     temp_li.append([os.path.join(address, file), os.path.getsize(os.path.join(address, file))])
@@ -107,6 +114,6 @@ class Net_Folder:
 
 
 # time1 = time.time()
-# lte = Net_Folder(os.path.dirname(os.path.realpath('__file__')) + "/ZTE/WCDMA")
+lte = Net_Folder("/Users/damnchick/Python/csv_analyzer/ZTE/WCDMA")
 # time2 = time.time()
 # print(time2 - time1)
