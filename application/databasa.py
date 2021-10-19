@@ -7,18 +7,49 @@ pd.set_option('use_inf_as_na', True)
 
 class DataBasa:
 
+	node_cell_dict = {'GSMV3':['SITEID','BTSNAME'],'LTE':['ENODEBID','CELLNAME'],'WCDMA':['NODEBID','CELLNAME']}
+
 	def __init__(self,zte_object,table_name):
-		self.__headers = zte_object.headers
 		self.__metrics = zte_object.metrics
+		self.__metrics_names = zte_object.metrics_names
 		self.__primary_keys = zte_object.primary_keys
 		self.__counters = zte_object.counters
 		self.__ZTE_type = table_name
 		self.__table_name = 'DB/' + table_name + '.pkl'
-		self.__table_temp_name = 'DB/' + table_name + '_reserved.pkl'
 		self.__zipfiles_list_list = zte_object.zipfiles_list
 		self.__data_time_field_name = self.__primary_keys[0]
 		self.__counters_group_by_frequency = 'H'
-		self.__cell_name_dict_list = []
+		self.__node_name = self.__class__.node_cell_dict[table_name][0]
+		self.__cell_name = self.__class__.node_cell_dict[table_name][1]
+
+	def result_to_pickle(self):
+		grouped_counters_list = []
+		for zip_file_list in self.__zipfiles_list_list:
+			grouped_counters = self.__data_frame_processing(self.__counters,self.__primary_keys,self.__data_time_field_name,self.__counters_group_by_frequency,zip_file_list,self.__ZTE_type)
+			grouped_counters_list.append(grouped_counters)
+		new_pickle = pd.concat(grouped_counters_list)
+		new_pickle = self.__append_cellname_to_wcdma(self.__ZTE_type,new_pickle,self.__primary_keys)		
+		try:
+			new_pickle = pd.concat([new_pickle,pd.read_pickle(self.__table_name,compression = 'zip')]).drop_duplicates().reset_index()
+		except:
+			pass
+		finally:
+			if not new_pickle.attrs:
+				new_pickle.attrs = self.__get_attr_for_dataframe(self.__ZTE_type,self.__node_name,self.__cell_name,self.__data_time_field_name,self.__metrics_names,self.__metrics,self.__primary_keys,self.__counters)
+			new_pickle.to_pickle(self.__table_name,compression = 'zip')
+
+	@staticmethod
+	def __get_attr_for_dataframe(zte_type,node_name,cell_name,data_time_field_name,metrics_names,metrics,primary_keys,counters):
+		attr_dict = {}
+		attr_dict['zte_type'] = zte_type
+		attr_dict['node_name'] = node_name
+		attr_dict['cell_name'] = cell_name
+		attr_dict['data_time_field_name'] = data_time_field_name
+		attr_dict['metrics'] = metrics
+		attr_dict['metrics_names'] = metrics_names
+		attr_dict['primary_keys'] = primary_keys
+		attr_dict['counters'] = counters
+		return attr_dict		
 
 	@classmethod
 	def _fill_temp_data_frame_list(cls,counters,zip_list,primary_keys,table_name):
@@ -73,20 +104,6 @@ class DataBasa:
 		copy_list = primary_keys[:]
 		copy_list.remove(data_time_field_name)
 		return copy_list
-
-	def result_to_pickle(self):
-		grouped_counters_list = []
-		for zip_file_list in self.__zipfiles_list_list:
-			grouped_counters = self.__data_frame_processing(self.__counters,self.__primary_keys,self.__data_time_field_name,self.__counters_group_by_frequency,zip_file_list,self.__ZTE_type)
-			grouped_counters_list.append(grouped_counters)
-		new_pickle = pd.concat(grouped_counters_list)
-		new_pickle = self.__append_cellname_to_wcdma(self.__ZTE_type,new_pickle,self.__primary_keys)
-		try:
-			new_pickle = pd.concat([new_pickle,pd.read_pickle(self.__table_name,compression = 'zip')]).drop_duplicates().reset_index()
-		except:
-			pass
-		finally:
-			new_pickle.to_pickle(self.__table_name,compression = 'zip')
 
 	@classmethod
 	def __data_frame_processing(cls,counters,primary_keys,data_time_field_name,counters_group_by_frequency,zip_list,table_name):

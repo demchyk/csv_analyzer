@@ -1,12 +1,5 @@
-import sqlite3
 import pandas as pd
-import numpy as np
-import math
-import sqlalchemy as db
-import os
-import time
-from zipfile import ZipFile
-import shutil
+
 
 
 # a = ['MAX(' + elem.strip() + ')' + 'AS ' + elem for elem in a.split(',')]
@@ -88,14 +81,15 @@ import shutil
 # print(df.attrs)
 
 
-# df = pd.read_pickle('/Users/denis/Programming/csv_analyzer/DB/WCDMA.pkl', compression = 'zip')
+df = pd.read_pickle('/Users/denis/Programming/csv_analyzer/DB/LTE.pkl', compression = 'zip')
+print(list(df.attrs.keys()))
 # df2 = df[['CELLID','CELLNAME']].dropna().drop_duplicates()
 # # df.drop(['CELLNAME'],axis = 1,inplace = True)
 # # df = df.merge(df2,how = 'left')
 # df = df.groupby([pd.Grouper(key = 'COLLECTTIME', freq = 'D')] + ['NODEBID','CELLID','CELLNAME']).sum()
 # df.to_csv('check2.csv')
 # df = pd.read_csv('some.csv')
-print(os.path.getsize('some.csv'))
+
 
 
 # df = df[df[claster_name].isin(claster)].groupby(claster_name, as_index = False).sum()

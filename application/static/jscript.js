@@ -4,11 +4,21 @@ $(document).ready(function() {
 	$(function($) {
 			let url = window.location.href;
 			$('#navMenus li a').each(function() {
-	   		if (this.href === url) {
+	   		if (url.includes(this.href)) {
 	   			$(this).addClass('active');
 	  		}
 	 		});
 	});
+
+	$('#dash_input_submit').hide();
+
+	setInterval(function(){
+	    if($('#dashboard_input_file').val()!=""){
+	     $('#dash_input_submit').show();
+	    }else{
+	        $('#dash_input_submit').hide();
+	    }
+	},1000);
 
 $(function() {
 
@@ -37,6 +47,10 @@ $(function() {
     cb(start, end);
 
 });
+
+
+
+
 
 
 
@@ -151,14 +165,33 @@ $(function() {
 
 
 });
-function get_button(element) {
-  if ($(element).val() != ''){
-  	$("#next").removeClass("disabled");
-  }
-  else{
-  	$("#next").addClass("disabled");
-  }
-}
 
+( function( $, window, document, undefined )
+{
+	$( '.inputfile' ).each( function()
+	{
+		var $input	 = $( this ),
+			$label	 = $input.next( 'label' ),
+			labelVal = $label.html();
+
+		$input.on( 'change', function( e )
+		{
+			var fileName = '';
+			fileName = e.target.value.split( '\\' ).pop();
+			if( fileName ){
+				$label.find( 'span' ).html( fileName );
+				$("#next").removeClass("disabled");
+			}
+			else{
+				$label.html( labelVal );
+				$("#next").addClass("disabled");
+			}
+		});
+		// Firefox bug fix
+		$input
+		.on( 'focus', function(){ $input.addClass( 'has-focus' ); })
+		.on( 'blur', function(){ $input.removeClass( 'has-focus' ); });
+	});
+})( jQuery, window, document );
 
 

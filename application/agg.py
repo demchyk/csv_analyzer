@@ -3,43 +3,30 @@ import numpy as np
 import time
 class Aggregation:
 
-	node_cell_dict = {'GSMV3':['SITEID','BTSNAME'],'LTE':['ENODEBID','CELLNAME'],'WCDMA':['NODEBID','CELLNAME']}
 
-	def __init__(self,zte_object,table_name,date_range,claster_check,aggregation_time_type=None,aggregation_type=None):
-		self.__metrics = zte_object.metrics
-		self.__metrics_names = zte_object.metrics_names
-		self.__primary_keys = zte_object.primary_keys
-		self.__counters = zte_object.counters
-		self.__ZTE_type = table_name
-		self.__report_file_name = 'ZTE/' + table_name + '/reports/' + table_name
-		self.__table_name = 'DB/' + table_name + '.pkl'
-		self.__data_time_field_name = self.__primary_keys[0]
-		self.__df = self.__class__.__create_df_from_pickle(self.__table_name)
+	def __init__(self,date_range,claster_check,aggregation_time_type=None,aggregation_type=None):
+		self.__df = self.__class__.__create_df_from_temp_pickle()
+		self.__metrics = self.__df.attrs['metrics']
+		self.__metrics_names = self.__df.attrs['metrics_names']
+		self.__primary_keys = self.__df.attrs['primary_keys']
+		self.__counters = self.__df.attrs['counters']
+		self.__ZTE_type = self.__df.attrs['zte_type']
+		self.__data_time_field_name = self.__df.attrs['data_time_field_name']	
+		self.__node_name = self.__df.attrs['node_name']
+		self.__cell_name = self.__df.attrs['cell_name']
+		self.__report_file_name = 'ZTE/' + self.__ZTE_type + '/reports/' + self.__ZTE_type
+		self.__table_name = 'DB/' + self.__ZTE_type + '.pkl'
+		self.__claster_check = claster_check
 		self.__date_range = date_range
 		self.__aggregation_time_type = aggregation_time_type
 		self.__aggregation_type = aggregation_type
-		self.__claster_name = zte_object.claster_name
-		self.__claster_values = zte_object.claster_values
-		self.__claster_check = claster_check
-		self.__node_name = self.__class__.node_cell_dict[table_name][0]
-		self.__cell_name = self.__class__.node_cell_dict[table_name][1]
 
 	@staticmethod
-	def __get_attr_for_dataframe(zte_type,node_name,cell_name,data_time_field_name,metrics_names):
-		attr_dict = {}
-		attr_dict['zte_type'] = zte_type
-		attr_dict['node_name'] = node_name
-		attr_dict['cell_name'] = cell_name
-		attr_dict['data_time_field_name'] = data_time_field_name
-		attr_dict['metrics_names'] = metrics_names
-		return attr_dict
-
-	@staticmethod
-	def __create_df_from_pickle(table_name):
-		return pd.read_pickle(table_name,compression = 'zip')
+	def __create_df_from_temp_pickle():
+		return pd.read_pickle('DB/export_to_csv.temp',compression = 'zip')
 
 	@classmethod
-	def __agg_by_time(cls,df,primary_keys,data_time_field_name,frequency,metrics,counters):
+	def __agg_by_time(cls,df,primary_keys,data_time_field_name,frequency,metrics):
 		if not frequency == 'H':
 			cutted_primary_keys = cls.__remover_collecttime_from_primary_keys(primary_keys,data_time_field_name)
 			df = df.groupby([pd.Grouper(key = data_time_field_name, freq = frequency)] + cutted_primary_keys).sum()
@@ -81,7 +68,7 @@ class Aggregation:
 		return df
 
 	@staticmethod
-	def __agg_by_type(df,aggregation_type,node_name,data_time_field_name,claster_name,claster_values,counters):
+	def __agg_by_type(df,aggregation_type,node_name,data_time_field_name,counters):
 		if aggregation_type == 'CELL':
 			return df
 		if aggregation_type == 'NODE':
@@ -89,26 +76,36 @@ class Aggregation:
 			return df.groupby([data_time_field_name,node_name],as_index = False).sum()[df_fields]
 		if aggregation_type == 'CLUSTER':
 			df_fields = [data_time_field_name,'CLUSTER'] + counters 
-			df = df[df[claster_name].isin(claster_values)].groupby(data_time_field_name,as_index = False).sum()
+			df = df[df[claster_name].astype(str).isin(claster_values)].groupby(data_time_field_name,as_index = False).sum()
 			df['CLUSTER'] = 'CLUSTER'
 			return df[df_fields]
 			# new_df['CLUSTER'] = 'CLUSTER'
 			# return new_df
+
 	@staticmethod
-	def __apply_claster(df,claster_check,claster_name,claster_values):
+	def __get_claster_info(df):
+		cluster_file = f'ZTE/{df.attrs["zte_type"]}/requirements/cluster.txt'
+		with open(cluster_file,'rt') as f:
+			nodes = [nodes_temp.strip() for nodes_temp in f.readlines() if not nodes_temp.isspace()]
+		return nodes[0],nodes[1:]	
+
+	@classmethod
+	def __apply_claster(cls,df,claster_check):
 		if claster_check == 'cluster':
-			return df[df[claster_name].isin(claster_values)]
+			claster_name,claster_values = cls.__get_claster_info(df)
+			return df[df[claster_name].astype(str).isin(claster_values)]
 		return df
 
 
 	def aggregate_to_csv(self):
 		time1 = time.time()
-		dframe = self.__agg_by_date_interval(self.__df.copy(),self.__date_range,self.__data_time_field_name)
+		dframe = self.__agg_by_date_interval(self.__df,self.__date_range,self.__data_time_field_name)
 		print(time.time() - time1)
-		dframe = self.__agg_by_time(dframe,self.__primary_keys,self.__data_time_field_name,self.__aggregation_time_type,self.__metrics,self.__counters)
+		dframe = self.__agg_by_time(dframe,self.__primary_keys,self.__data_time_field_name,self.__aggregation_time_type,self.__metrics)
 		print(time.time() - time1)
-		dframe = self.__apply_claster(dframe,self.__claster_check,self.__claster_name,self.__claster_values)
-		dframe = self.__agg_by_type(dframe,self.__aggregation_type,self.__node_name,self.__data_time_field_name,self.__claster_name,self.__claster_values,self.__counters)
+		dframe = self.__apply_claster(dframe,self.__claster_check)
+		print(time.time() - time1)
+		dframe = self.__agg_by_type(dframe,self.__aggregation_type,self.__node_name,self.__data_time_field_name,self.__counters)
 		print(time.time() - time1)
 		dframe = self.__swap_counters_for_metrics(dframe,self.__metrics,self.__counters)
 		print(time.time() - time1)
@@ -118,5 +115,4 @@ class Aggregation:
 		dframe = self.__agg_by_date_interval(self.__df.copy(),self.__date_range,self.__data_time_field_name)
 		dframe = self.__apply_claster(dframe,self.__claster_check,self.__claster_name,self.__claster_values)
 		dframe = self.__swap_counters_for_metrics(dframe,self.__metrics,self.__counters)
-		dframe.attrs = self.__get_attr_for_dataframe(self.__ZTE_type,self.__node_name,self.__cell_name,self.__data_time_field_name,self.__metrics_names)
 		dframe.to_pickle('DB/dashboard.temp',compression = 'zip')
