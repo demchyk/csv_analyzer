@@ -1,10 +1,11 @@
 import pandas as pd
 import numpy as np
 import time
+import os
 class Aggregation:
 
-
-	def __init__(self,date_range,claster_check,aggregation_time_type=None,aggregation_type=None):
+# Getting all needed info from dataframe attributes
+	def __init__(self,date_range=None,claster_check=None,aggregation_time_type=None,aggregation_type=None):
 		self.__df = self.__class__.__create_df_from_temp_pickle()
 		self.__metrics = self.__df.attrs['metrics']
 		self.__metrics_names = self.__df.attrs['metrics_names']
@@ -20,26 +21,27 @@ class Aggregation:
 		self.__date_range = date_range
 		self.__aggregation_time_type = aggregation_time_type
 		self.__aggregation_type = aggregation_type
-
+# ----------------------------------------------------------------------------------
 	@staticmethod
 	def __create_df_from_temp_pickle():
 		return pd.read_pickle('DB/export_to_csv.temp',compression = 'zip')
-
+# ----------------------------------------------------------------------------------
 	@classmethod
 	def __agg_by_time(cls,df,primary_keys,data_time_field_name,frequency,metrics):
-		if not frequency == 'H':
+		if not frequency == 'H': # to save time
 			cutted_primary_keys = cls.__remover_collecttime_from_primary_keys(primary_keys,data_time_field_name)
 			df = df.groupby([pd.Grouper(key = data_time_field_name, freq = frequency)] + cutted_primary_keys).sum()
 			df.reset_index(inplace = True)
 			return df
 		return df
-
+# ----------------------------------------------------------------------------------
 	@staticmethod
 	def __remover_collecttime_from_primary_keys(primary_keys,data_time_field_name):
 		copy_list = primary_keys[:]
 		copy_list.remove(data_time_field_name)
 		return copy_list
-
+# ----------------------------------------------------------------------------------		
+# Getting formulas names as dataframe columns names
 	@staticmethod
 	def __rename_metrics_for_usage(metrics,counters):
 		new_dict = {}
@@ -49,7 +51,8 @@ class Aggregation:
 				new_value = new_value.replace(counter,'df["' + counter + '"].values')
 			new_dict[key] = new_value
 		return new_dict
-
+# ----------------------------------------------------------------------------------
+# Calculate new dataframes columns (dict keys) as evaluated expressions (dict values)
 	@classmethod
 	def __swap_counters_for_metrics(cls,df,metrics,counters):
 		renamed_metrics = cls.__rename_metrics_for_usage(metrics,counters)
@@ -59,44 +62,45 @@ class Aggregation:
 			df[key] = np.around(eval(value),2)
 		final_table = df[primary_keys + list(metrics.keys())]
 		return final_table
-
+# ----------------------------------------------------------------------------------
+# Splitting income data to start and end date as it comes in one variable
 	@staticmethod
 	def __agg_by_date_interval(df,date_range,data_time_field_name):
 		date_start = date_range.split(' - ')[0]
 		date_end = date_range.split(' - ')[1]
 		df = df[(df[data_time_field_name] >= date_start) & (df[data_time_field_name] <= date_end)]
 		return df
-
-	@staticmethod
-	def __agg_by_type(df,aggregation_type,node_name,data_time_field_name,counters):
+# ----------------------------------------------------------------------------------
+	@classmethod
+	def __agg_by_type(cls,df,aggregation_type,node_name,data_time_field_name,counters):
 		if aggregation_type == 'CELL':
 			return df
 		if aggregation_type == 'NODE':
-			df_fields = [data_time_field_name,node_name] + counters
+			df_fields = [data_time_field_name,node_name] + counters # getting rid of useless primary keys
 			return df.groupby([data_time_field_name,node_name],as_index = False).sum()[df_fields]
 		if aggregation_type == 'CLUSTER':
-			df_fields = [data_time_field_name,'CLUSTER'] + counters 
-			df = df[df[claster_name].astype(str).isin(claster_values)].groupby(data_time_field_name,as_index = False).sum()
-			df['CLUSTER'] = 'CLUSTER'
+			claster_name,claster_values = cls.__get_claster_info(df)
+			df_fields = [data_time_field_name,'CLUSTER'] + counters # getting rid of useless primary keys for the future
+			df = df[df[claster_name].astype(str).isin(claster_values)].groupby(data_time_field_name,as_index = False).sum() # converting to string because values from file come as integers
+			df['CLUSTER'] = 'CLUSTER' # new filed named CLUSTER with all values as CLUSTER
 			return df[df_fields]
-			# new_df['CLUSTER'] = 'CLUSTER'
-			# return new_df
-
+# ----------------------------------------------------------------------------------
 	@staticmethod
 	def __get_claster_info(df):
 		cluster_file = f'ZTE/{df.attrs["zte_type"]}/requirements/cluster.txt'
 		with open(cluster_file,'rt') as f:
-			nodes = [nodes_temp.strip() for nodes_temp in f.readlines() if not nodes_temp.isspace()]
-		return nodes[0],nodes[1:]	
-
+			nodes = [nodes_temp.strip() for nodes_temp in f.readlines() if not nodes_temp.isspace()] # check if line is empty
+		return nodes[0],nodes[1:] # claster field name as first parameter and values as second
+# ----------------------------------------------------------------------------------
+# If claster checkbox is selected - read info from cluster.txt and return it as 2d list (claster field name as first parameter and values as second)
 	@classmethod
 	def __apply_claster(cls,df,claster_check):
 		if claster_check == 'cluster':
 			claster_name,claster_values = cls.__get_claster_info(df)
 			return df[df[claster_name].astype(str).isin(claster_values)]
 		return df
-
-
+# ----------------------------------------------------------------------------------
+# Main function to get result from pickle to CSV
 	def aggregate_to_csv(self):
 		time1 = time.time()
 		dframe = self.__agg_by_date_interval(self.__df,self.__date_range,self.__data_time_field_name)
@@ -110,9 +114,18 @@ class Aggregation:
 		dframe = self.__swap_counters_for_metrics(dframe,self.__metrics,self.__counters)
 		print(time.time() - time1)
 		dframe.to_csv((f'{self.__report_file_name}-{self.__date_range}-{self.__aggregation_type}-{self.__aggregation_time_type}.csv').replace(' ',''))		
-
+# ----------------------------------------------------------------------------------
+# Main function to get result from given pickle to temp pickle
 	def aggregate_to_dataframe(self):
-		dframe = self.__agg_by_date_interval(self.__df.copy(),self.__date_range,self.__data_time_field_name)
+		dframe = self.__agg_by_date_interval(self.__df,self.__date_range,self.__data_time_field_name)
 		dframe = self.__apply_claster(dframe,self.__claster_check,self.__claster_name,self.__claster_values)
 		dframe = self.__swap_counters_for_metrics(dframe,self.__metrics,self.__counters)
 		dframe.to_pickle('DB/dashboard.temp',compression = 'zip')
+# ----------------------------------------------------------------------------------
+
+# Out of class function to call it in __init__
+def delete_temp_files(TEMP_FILES):
+	for temp_file in TEMP_FILES:
+		if os.path.exists(temp_file):
+			os.remove(temp_file)
+# ----------------------------------------------------------------------------------

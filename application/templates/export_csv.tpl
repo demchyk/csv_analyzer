@@ -20,9 +20,6 @@
 		</label>
 	</div>
 	</section>
-
-
-
  	<section>
  		<p>Select date interval</p>
 		<div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
@@ -49,8 +46,6 @@
 			<option value="Y">Year</option>
 		</select>
 	 </section>
-
-
  	<div class="button" id="prev">&larr; Previous</div>
 	<div class="button" id="next">Next &rarr;</div>
 	<button class="btn sub_button" type="submit" id="submit" >Submit</button> 
