@@ -41,25 +41,14 @@ class Aggregation:
 		copy_list.remove(data_time_field_name)
 		return copy_list
 # ----------------------------------------------------------------------------------		
-# Getting formulas names as dataframe columns names
-	@staticmethod
-	def __rename_metrics_for_usage(metrics,counters):
-		new_dict = {}
-		for key,value in metrics.items():
-			new_value = value
-			for counter in counters:
-				new_value = new_value.replace(counter,'df["' + counter + '"].values')
-			new_dict[key] = new_value
-		return new_dict
 # ----------------------------------------------------------------------------------
 # Calculate new dataframes columns (dict keys) as evaluated expressions (dict values)
 	@classmethod
 	def __swap_counters_for_metrics(cls,df,metrics,counters):
-		renamed_metrics = cls.__rename_metrics_for_usage(metrics,counters)
 		df_columns = df.columns.tolist()
 		primary_keys = [key for key in df_columns if key not in counters]
-		for key,value in renamed_metrics.items():
-			df[key] = np.around(eval(value),2)
+		for key,value in metrics.items():
+			df[key] = np.around(df.eval(value),2)
 		final_table = df[primary_keys + list(metrics.keys())]
 		return final_table
 # ----------------------------------------------------------------------------------
