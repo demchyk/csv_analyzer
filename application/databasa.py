@@ -2,6 +2,7 @@ import pandas as pd
 from zipfile import ZipFile
 from . import multipotok
 from functools import partial
+from time import ctime
 pd.set_option('use_inf_as_na', True)
 
 class DataBasa:
@@ -24,22 +25,29 @@ class DataBasa:
 # Main class method
 	def result_to_pickle(self):
 		grouped_counters_list = []
+		i = 0
 		for zip_file_list in self.__zipfiles_list_list: # we are getting list of dataframe's lists made from chunked ziplist
+			i+=1 
+			print(ctime(),'--- Start working with chunk №',i,'..')
 			grouped_counters = self.__data_frame_processing(self.__counters,self.__primary_keys,self.__data_time_field_name,self.__counters_group_by_frequency,zip_file_list,self.__ZTE_type)
 			grouped_counters_list.append(grouped_counters)
+			print(ctime(),'--- Chunk №',i,'is processed')
 		new_pickle = pd.concat(grouped_counters_list) # concating dataframe list in one dataframe
 
 		# ----------------------------WCDMA-CRUTCH-START-------------------------------------------	
 		new_pickle = self.__append_cellname_to_wcdma(self.__ZTE_type,new_pickle,self.__primary_keys)
 		# ----------------------------WCDMA-CRUTCH-END---------------------------------------------	
-		
+
+		new_pickle = self.__replace_dtypes_in_dataframe(new_pickle).sort_values(self.__data_time_field_name).drop_duplicates().reset_index(drop = True) # convert to lighter dtypes
 		try:
-			new_pickle = pd.concat([new_pickle,pd.read_pickle(self.__table_name,compression = 'zip')]).drop_duplicates().reset_index() # if pickle already exists - concat in one pickle and drop duplicates
+			print(ctime(),'--- Reading info from existing pickles..')
+			new_pickle = pd.concat([new_pickle,pd.read_pickle(self.__table_name,compression = 'zip')]).sort_values(self.__data_time_field_name).drop_duplicates().reset_index(drop = True) # if pickle already exists - concat in one pickle and drop duplicates
 		except:
 			pass		
 		finally:
 			if not new_pickle.attrs: # Create final pickle with attributes
 				new_pickle.attrs = self.__get_attr_for_dataframe(self.__ZTE_type,self.__node_name,self.__cell_name,self.__data_time_field_name,self.__metrics_names,self.__metrics,self.__primary_keys,self.__counters)
+			print(ctime(),'--- Dumping info to pickle..')
 			new_pickle.to_pickle(self.__table_name,compression = 'zip')
 # ----------------------------------------------------------------------------------
 	@staticmethod
@@ -99,15 +107,6 @@ class DataBasa:
 		except:
 			pass
 # ----------------------------------------------------------------------------------
-	@staticmethod
-	def __rename_metrics_for_usage(metrics,counters):
-		new_dict = {}
-		for key,value in metrics.items():
-			new_value = value
-			for counter in counters:
-				new_value = new_value.replace(counter,'grouped_counters["' + counter + '"]')
-			new_dict[key] = new_value
-		return new_dict
 # ----------------------------------------------------------------------------------		
 # Remove COLLECTTIME from primary keys in order to group by tim period (hour,day,week,etc)
 	@staticmethod
@@ -146,6 +145,19 @@ class DataBasa:
 		grouped_counters = grouped_counters.groupby([pd.Grouper(key = data_time_field_name, freq = frequency)] + cutted_primary_keys,dropna = False).sum()
 		grouped_counters.reset_index(inplace = True)
 		return grouped_counters
+# ----------------------------------------------------------------------------------
+# Replace FLOAT and INT datatypes to reduce dataframe memory consumption
+	@staticmethod
+	def __replace_dtypes_in_dataframe(df):
+		dtypes_dict = {}
+		float_dict = dict.fromkeys(df.select_dtypes('float64').columns, 'int32')
+		int_dict = dict.fromkeys(df.select_dtypes('int64').columns, 'int32')
+		dtypes_dict.update(float_dict) # concat two dictionaries
+		dtypes_dict.update(int_dict) # concat two dictionaries
+		df = df.astype(dtypes_dict)
+		float_columns = df.select_dtypes('int32').columns
+		df[float_columns] = df[float_columns].apply(pd.to_numeric, downcast='integer')
+		return df
 # ----------------------------------------------------------------------------------
 
 # ----------------------------WCDMA-CRUTCH-START------------------------------------

@@ -1,5 +1,5 @@
 import pandas as pd
-
+import time
 
 
 # a = ['MAX(' + elem.strip() + ')' + 'AS ' + elem for elem in a.split(',')]
@@ -81,8 +81,11 @@ import pandas as pd
 # print(df.attrs)
 
 
-df = pd.read_pickle('/Users/denis/Programming/csv_analyzer/DB/LTE.pkl', compression = 'zip')
-print(list(df.attrs.keys()))
+df = pd.read_pickle('/Users/denis/Programming/csv_analyzer/DB/GSMV3.pkl', compression = 'zip')
+
+print(df.info(memory_usage='deep'))
+
+# print(df.max().to_string())
 # df2 = df[['CELLID','CELLNAME']].dropna().drop_duplicates()
 # # df.drop(['CELLNAME'],axis = 1,inplace = True)
 # # df = df.merge(df2,how = 'left')

@@ -100,7 +100,6 @@ class Net_Folder:
                 size_counter = 0
             else:
                 rez[i].append(item[0])
-        print('ziplist by size ---' , time.ctime())
         return rez
 
     @staticmethod

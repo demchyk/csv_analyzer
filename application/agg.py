@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import time
+import datetime
 import os
 class Aggregation:
 
@@ -57,7 +58,7 @@ class Aggregation:
 	def __agg_by_date_interval(df,date_range,data_time_field_name):
 		date_start = date_range.split(' - ')[0]
 		date_end = date_range.split(' - ')[1]
-		df = df[(df[data_time_field_name] >= date_start) & (df[data_time_field_name] <= date_end)]
+		df = df[(df[data_time_field_name] >= date_start) & (df[data_time_field_name]-datetime.timedelta(days=1) < date_end)]
 		return df
 # ----------------------------------------------------------------------------------
 	@classmethod
