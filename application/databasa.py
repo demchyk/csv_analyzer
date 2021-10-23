@@ -2,6 +2,7 @@ import pandas as pd
 from zipfile import ZipFile
 from . import multipotok
 from functools import partial
+import time
 from time import ctime
 pd.set_option('use_inf_as_na', True)
 
@@ -25,13 +26,19 @@ class DataBasa:
 # Main class method
 	def result_to_pickle(self):
 		grouped_counters_list = []
+		ziplist_len = len(self.__zipfiles_list_list)
 		i = 0
 		for zip_file_list in self.__zipfiles_list_list: # we are getting list of dataframe's lists made from chunked ziplist
-			i+=1 
-			print(ctime(),'--- Start working with chunk №',i,'..')
+			i+=1
+			remaining_chunk_len = ziplist_len - i
+			start_time = time.time()
+			print(ctime(),'--- Start working with chunk №',i,'of',ziplist_len)
 			grouped_counters = self.__data_frame_processing(self.__counters,self.__primary_keys,self.__data_time_field_name,self.__counters_group_by_frequency,zip_file_list,self.__ZTE_type)
 			grouped_counters_list.append(grouped_counters)
+			end_time = time.time()
 			print(ctime(),'--- Chunk №',i,'is processed')
+			print(f'Approximate remaining time is {int((end_time - start_time)*remaining_chunk_len)}')
+		print(ctime(),'--- Start concatinating dataframe')
 		new_pickle = pd.concat(grouped_counters_list) # concating dataframe list in one dataframe
 
 		# ----------------------------WCDMA-CRUTCH-START-------------------------------------------	
@@ -128,7 +135,7 @@ class DataBasa:
 	def __generate_concated_temp_data_frame(cls,counters,zip_list,primary_keys,table_name):
 		temp_data_frame_list = cls._fill_temp_data_frame_list(counters,zip_list,primary_keys,table_name)
 		concated_data_frames = pd.concat(temp_data_frame_list)
-		return concated_data_frames
+		return cls.__replace_dtypes_in_milestone_dataframe_(concated_data_frames)
 # ----------------------------------------------------------------------------------
 	@staticmethod
 	def __group_data_frame_by_primary_keys(concated_data_frames,primary_keys):
@@ -158,6 +165,12 @@ class DataBasa:
 		float_columns = df.select_dtypes('int32').columns
 		df[float_columns] = df[float_columns].apply(pd.to_numeric, downcast='integer')
 		return df
+# ----------------------------------------------------------------------------------
+# Replace FLOAT and INT datatypes to reduce dataframe memory consumption
+	@staticmethod
+	def __replace_dtypes_in_milestone_dataframe_(df):
+		float_dict = dict.fromkeys(df.select_dtypes('float64').columns, 'int32')
+		return df.astype(float_dict)
 # ----------------------------------------------------------------------------------
 
 # ----------------------------WCDMA-CRUTCH-START------------------------------------

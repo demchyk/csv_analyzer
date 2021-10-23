@@ -1,14 +1,8 @@
 import os
 import zipfile
 import shutil
-import time
 
 class Net_Folder:
-    def __new__(cls, path):
-        if cls.__check_requirements(path) and cls.__check_input_data(path):
-            return super().__new__(cls)
-        else:
-            return None
 
     def __init__(self, path):
         self.__path = path
@@ -49,14 +43,6 @@ class Net_Folder:
     def __get_input_files_path(path):
         f = open(path + '/requirements/datapath.txt')
         return f.readline().strip()
-
-
-    @staticmethod
-    def __check_input_data(path):
-        if os.listdir(path + "/input_data/"):
-            return True
-        else:
-            return False
 
     @classmethod
     def __processing_input(cls, path):
@@ -113,6 +99,5 @@ class Net_Folder:
 
 
 # time1 = time.time()
-lte = Net_Folder("/Users/damnchick/Python/csv_analyzer/ZTE/WCDMA")
 # time2 = time.time()
 # print(time2 - time1)
