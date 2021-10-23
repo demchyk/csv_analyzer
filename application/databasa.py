@@ -37,7 +37,7 @@ class DataBasa:
 			grouped_counters_list.append(grouped_counters)
 			end_time = time.time()
 			print(ctime(),'--- Chunk №',i,'is processed')
-			print(f'Approximate remaining time is {int((end_time - start_time)*remaining_chunk_len)}')
+			print(f'Approximate remaining time is {int((end_time - start_time)*remaining_chunk_len)} second(s)')
 		print(ctime(),'--- Start concatinating dataframe')
 		new_pickle = pd.concat(grouped_counters_list) # concating dataframe list in one dataframe
 
@@ -135,6 +135,7 @@ class DataBasa:
 	def __generate_concated_temp_data_frame(cls,counters,zip_list,primary_keys,table_name):
 		temp_data_frame_list = cls._fill_temp_data_frame_list(counters,zip_list,primary_keys,table_name)
 		concated_data_frames = pd.concat(temp_data_frame_list)
+		concated_data_frames.fillna(0,inplace = True)
 		return cls.__replace_dtypes_in_milestone_dataframe_(concated_data_frames)
 # ----------------------------------------------------------------------------------
 	@staticmethod
