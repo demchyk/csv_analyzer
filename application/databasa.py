@@ -78,7 +78,8 @@ class DataBasa:
 		df_list_of_list = multipotok.parmap(read_zip_partial,zip_list)
 		for df_list_elem in df_list_of_list:
 			if df_list_elem: # check if there was a zip with none valid CSV
-				df_list += df_list_elem
+				valid_df_list_elem = [elem for elem in df_list_elem if not elem is None]
+				df_list += valid_df_list_elem
 		return df_list
 # ----------------------------------------------------------------------------------
 # Creating dataframe from CSV. If CSV has any counters dataframe is added to list of dataframes
@@ -139,7 +140,8 @@ class DataBasa:
 		temp_data_frame_list = cls._fill_temp_data_frame_list(counters,zip_list,primary_keys,table_name)
 		print(ctime(),'start concating')
 		concated_data_frames = pd.concat(temp_data_frame_list)
-		return concated_data_frames
+		concated_data_frames.fillna(dict.fromkeys(counters,0),inplace = True)
+		return cls.__replace_dtypes_in_milestone_dataframe_(concated_data_frames)
 # ----------------------------------------------------------------------------------
 	@staticmethod
 	def __group_data_frame_by_primary_keys(concated_data_frames,primary_keys):

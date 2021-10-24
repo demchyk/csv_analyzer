@@ -83,12 +83,6 @@ import time
 # print(df.attrs)
 time1 = time.time()
 dframe = pd.read_pickle('/Users/denis/Programming/csv_analyzer/DB/GSMV3.pkl', compression = 'zip')
-print(dframe.info(memory_usage = 'deep'))
-dframe.fillna(0,inplace=True)
-
-print(dframe.info(memory_usage = 'deep'))
-dframe.dropna(inplace = True)
-print(dframe.info(memory_usage = 'deep'))
 
 # def agg_by_time(df,primary_keys,data_time_field_name,frequency,metrics):
 # 	if not frequency == 'H': # to save time
