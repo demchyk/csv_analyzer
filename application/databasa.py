@@ -126,17 +126,20 @@ class DataBasa:
 	@classmethod
 	def __data_frame_processing(cls,counters,primary_keys,data_time_field_name,counters_group_by_frequency,zip_list,table_name):
 		grouped_counters = cls.__generate_concated_temp_data_frame(counters,zip_list,primary_keys,table_name)
+		print(ctime(),'start grouping by primary_keys')
 		grouped_counters = cls.__group_data_frame_by_primary_keys(grouped_counters,primary_keys)
 		grouped_counters[data_time_field_name] = cls.__set_data_time_format_for_dataframe(data_time_field_name,grouped_counters)
+		print(ctime(),'start frequency')
 		grouped_counters = cls.__group_counters_by_frequency(primary_keys,grouped_counters,data_time_field_name,counters_group_by_frequency)
+		print(ctime(),'end frequency')
 		return grouped_counters
 # ----------------------------------------------------------------------------------
 	@classmethod
 	def __generate_concated_temp_data_frame(cls,counters,zip_list,primary_keys,table_name):
 		temp_data_frame_list = cls._fill_temp_data_frame_list(counters,zip_list,primary_keys,table_name)
+		print(ctime(),'start concating')
 		concated_data_frames = pd.concat(temp_data_frame_list)
-		concated_data_frames.fillna(0,inplace = True)
-		return cls.__replace_dtypes_in_milestone_dataframe_(concated_data_frames)
+		return concated_data_frames
 # ----------------------------------------------------------------------------------
 	@staticmethod
 	def __group_data_frame_by_primary_keys(concated_data_frames,primary_keys):

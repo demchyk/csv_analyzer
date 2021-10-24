@@ -1,4 +1,6 @@
 import pandas as pd
+import dask
+import dask.dataframe as dd
 import time
 
 
@@ -79,12 +81,31 @@ import time
 # # df  = df.groupby(['COLLECTTIME','NODEBID','CELLID'],as_index = False).sum()
 # df.to_csv('check.csv')
 # print(df.attrs)
+time1 = time.time()
+dframe = pd.read_pickle('/Users/denis/Programming/csv_analyzer/DB/GSMV3.pkl', compression = 'zip')
+print(dframe.info(memory_usage = 'deep'))
+dframe.fillna(0,inplace=True)
 
+print(dframe.info(memory_usage = 'deep'))
+dframe.dropna(inplace = True)
+print(dframe.info(memory_usage = 'deep'))
 
-df = pd.read_pickle('/Users/denis/Programming/csv_analyzer/DB/GSMV3.pkl', compression = 'zip')
+# def agg_by_time(df,primary_keys,data_time_field_name,frequency,metrics):
+# 	if not frequency == 'H': # to save time
+# 		cutted_primary_keys = remover_collecttime_from_primary_keys(primary_keys,data_time_field_name)
+# 		df = df.groupby(pd.TimeGrouper(key='dates', freq='D'),cutted_primary_keys).sum()
+# 		return df
+# 	return df
 
-print(df.info(memory_usage='deep'))
+# def remover_collecttime_from_primary_keys(primary_keys,data_time_field_name):
+# 	copy_list = primary_keys[:]
+# 	copy_list.remove(data_time_field_name)
+# 	return copy_list
 
+# agg_by_time(dframe,dframe.attrs['primary_keys'],dframe.attrs['data_time_field_name'],'D',dframe.attrs['metrics']).to_csv('export-*.csv')
+
+# # ddf.to_csv('export-*.csv')
+# print(time.time() - time1)
 # print(df.max().to_string())
 # df2 = df[['CELLID','CELLNAME']].dropna().drop_duplicates()
 # # df.drop(['CELLNAME'],axis = 1,inplace = True)
