@@ -4,6 +4,7 @@ from . import multipotok
 from functools import partial
 import time
 from time import ctime
+import parmap
 pd.set_option('use_inf_as_na', True)
 
 class DataBasa:
@@ -75,10 +76,9 @@ class DataBasa:
 	def _fill_temp_data_frame_list(cls,counters,zip_list,primary_keys,table_name):
 		df_list = []
 		read_zip_partial = partial(cls._read_zip,primary_keys,counters,table_name)
-		df_list_of_list = multipotok.parmap(read_zip_partial,zip_list)
+		df_list_of_list = parmap.map(read_zip_partial,zip_list,pm_pbar=True)
 		for df_list_elem in df_list_of_list:
 			if df_list_elem: # check if there was a zip with none valid CSV
-				valid_df_list_elem = [elem for elem in df_list_elem if not elem is None]
 				df_list += valid_df_list_elem
 		return df_list
 # ----------------------------------------------------------------------------------
