@@ -20,13 +20,13 @@ def load_data():
 def load_data_action():
 	time1 = time.time()
 	zte_type = str(request.form.get('zte_type'))
-	engine.start_filling(zte_type)
-	# try:
-	# 	engine.start_filling(zte_type) # method to fill pickle from zip(csv)
-	# 	print('--- Super algorithm has dealt with it in just ',time.time() - time1,' seconds ---')
-	# 	return redirect(url_for('load_data', result = 'Success'))
-	# except:
-	# 	return redirect(url_for('load_data', result = 'Missing some files / folders'))
+	# engine.start_filling(zte_type)
+	try:
+		engine.start_filling(zte_type) # method to fill pickle from zip(csv)
+		print('--- Super algorithm has dealt with it in just ',time.time() - time1,' seconds ---')
+		return redirect(url_for('load_data', result = 'Success'))
+	except:
+		return redirect(url_for('load_data', result = 'Missing some files / folders'))
 
 # ----------------------------------------------------------------------------------
 # Render template with taking error as parametr from link (?error=smth)

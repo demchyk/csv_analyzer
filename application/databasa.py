@@ -76,10 +76,10 @@ class DataBasa:
 	def _fill_temp_data_frame_list(cls,counters,zip_list,primary_keys,table_name):
 		df_list = []
 		read_zip_partial = partial(cls._read_zip,primary_keys,counters,table_name)
-		df_list_of_list = parmap.map(read_zip_partial,zip_list,pm_pbar=True)
+		df_list_of_list = parmap.map_async(read_zip_partial,zip_list).get()
 		for df_list_elem in df_list_of_list:
 			if df_list_elem: # check if there was a zip with none valid CSV
-				df_list += valid_df_list_elem
+				df_list += df_list_elem
 		return df_list
 # ----------------------------------------------------------------------------------
 # Creating dataframe from CSV. If CSV has any counters dataframe is added to list of dataframes
