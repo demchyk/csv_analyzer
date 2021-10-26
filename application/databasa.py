@@ -76,7 +76,8 @@ class DataBasa:
 	def _fill_temp_data_frame_list(cls,counters,zip_list,primary_keys,table_name):
 		df_list = []
 		read_zip_partial = partial(cls._read_zip,primary_keys,counters,table_name)
-		df_list_of_list = parmap.map_async(read_zip_partial,zip_list).get()
+		with parmap.map_async(read_zip_partial,zip_list) as parmap_read_zip:
+			df_list_of_list = parmap_read_zip.get()
 		for df_list_elem in df_list_of_list:
 			if df_list_elem: # check if there was a zip with none valid CSV
 				df_list += df_list_elem
