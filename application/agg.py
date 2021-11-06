@@ -3,6 +3,7 @@ import numpy as np
 import time
 import datetime
 import os
+import shutil
 class Aggregation:
 
 # Getting all needed info from dataframe attributes
@@ -17,6 +18,7 @@ class Aggregation:
 		self.__node_name = self.__df.attrs['node_name']
 		self.__cell_name = self.__df.attrs['cell_name']
 		self.__report_file_name = 'ZTE/' + self.__ZTE_type + '/reports/' + self.__ZTE_type
+		self.__instructions_file = 'ZTE/' + self.__ZTE_type + '/requirements/' + 'formula.txt'
 		self.__table_name = 'DB/' + self.__ZTE_type + '.pkl'
 		self.__claster_check = claster_check
 		self.__date_range = date_range
@@ -45,7 +47,8 @@ class Aggregation:
 # ----------------------------------------------------------------------------------
 # Calculate new dataframes columns (dict keys) as evaluated expressions (dict values)
 	@classmethod
-	def __swap_counters_for_metrics(cls,df,metrics,counters):
+	def __swap_counters_for_metrics(cls,df,counters,instructions_file):
+		metrics = cls.__metrics_from_file(instructions_file)
 		df_columns = df.columns.tolist()
 		primary_keys = [key for key in df_columns if key not in counters]
 		for key,value in metrics.items():
@@ -101,7 +104,7 @@ class Aggregation:
 		print(time.time() - time1)
 		dframe = self.__agg_by_type(dframe,self.__aggregation_type,self.__node_name,self.__data_time_field_name,self.__counters)
 		print(time.time() - time1)
-		dframe = self.__swap_counters_for_metrics(dframe,self.__metrics,self.__counters)
+		dframe = self.__swap_counters_for_metrics(dframe,self.__counters,self.__instructions_file)
 		print(time.time() - time1)
 		dframe.to_csv((f'{self.__report_file_name}-{self.__date_range}-{self.__aggregation_type}-{self.__aggregation_time_type}.csv').replace(' ',''))		
 # ----------------------------------------------------------------------------------
@@ -112,10 +115,25 @@ class Aggregation:
 		dframe = self.__swap_counters_for_metrics(dframe,self.__metrics,self.__counters)
 		dframe.to_pickle('DB/dashboard.temp',compression = 'zip')
 # ----------------------------------------------------------------------------------
+# Get metrics from txt file
+	@staticmethod
+	def __metrics_from_file(instructions_file):
+		with open(instructions_file,'rt') as f:
+			formulas = [formulas_temp.strip() for formulas_temp in f.readlines() if not formulas_temp.isspace()] # checking for empty lines
+		metrica_dic = {}
+		for formula in formulas:
+			metrica = formula[:formula.find('=')].strip() # formula name (before first '=' )
+			expression = formula[formula.find('=') + 1:] # formula expression (after first '=' )
+			metrica_dic[metrica] = expression.strip()
+		return metrica_dic
+# ----------------------------------------------------------------------------------
+
 
 # Out of class function to call it in __init__
 def delete_temp_files(TEMP_FILES):
 	for temp_file in TEMP_FILES:
 		if os.path.exists(temp_file):
 			os.remove(temp_file)
+	if os.path.exists('file_system_store'):
+		shutil.rmtree('file_system_store', ignore_errors=True)
 # ----------------------------------------------------------------------------------

@@ -1,7 +1,6 @@
 from flask import current_app as app
 from flask import render_template,request,redirect,url_for
 from . import engine
-from . plotlydash import dashboard
 import time
 import os
 
