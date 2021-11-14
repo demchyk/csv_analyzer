@@ -59,10 +59,10 @@ For using this application you must have a specific file structure in your main 
 
 Run the server and open the server home page
 For processing input data open the "Load new data" tab and follow the instruction
-![](/img/load_new_data.png)
+![load_new_data](/img/load_new_data.png)
 
 For export processed data open the "Export to csv" tab and follow the instruction
-![](/img/export_to_scv.png.png)
+![export_to_scv](/img/export_to_scv.png)
 
 For visualization data open the "Dashboard" tab
-![](/img/dashapp.gif)
+![dashapp](/img/dashapp.gif)
