@@ -3,7 +3,7 @@
 
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger) [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/release/python-390/)
 
-Service for processing and analysing big data provided in csv format. As input we 
+Service for processing and analysing big data provided in csv format. 
 
 
 ## Installation and running
@@ -58,11 +58,19 @@ For using this application you must have a specific file structure in your main 
 ```
 
 Run the server and open the server home page
+
 For processing input data open the "Load new data" tab and follow the instruction
+
 ![load_new_data](/img/load_newdata.png)
 
-For export processed data open the "Export to csv" tab and follow the instruction
+
+
+To export processed data open the "Export to csv" tab and follow the instruction
+
 ![export_to_scv](/img/export_to_scv.png)
 
+
+
 For visualization data open the "Dashboard" tab
+
 ![dashapp](/img/dashapp.gif)
