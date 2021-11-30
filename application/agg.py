@@ -9,25 +9,44 @@ class Aggregation:
 # Getting all needed info from dataframe attributes
 	def __init__(self,date_range=None,claster_check=None,aggregation_time_type=None,aggregation_type=None):
 		self.__df = self.__class__.__create_df_from_temp_pickle()
-		self.__metrics = self.__df.attrs['metrics']
-		self.__metrics_names = self.__df.attrs['metrics_names']
-		self.__primary_keys = self.__df.attrs['primary_keys']
-		self.__counters = self.__df.attrs['counters']
 		self.__ZTE_type = self.__df.attrs['zte_type']
+		self.__instructions_file = 'ZTE/' + self.__ZTE_type + '/requirements/' + 'formula.txt'
+		self.__metrics = self.__class__.__metrics_from_file(self.__instructions_file)
+		self.__metrics_names = list(self.__metrics.keys())
+		self.__counters = self.__class__.__extract_counters_from_formulas(self.__instructions_file)	
 		self.__data_time_field_name = self.__df.attrs['data_time_field_name']	
 		self.__node_name = self.__df.attrs['node_name']
 		self.__cell_name = self.__df.attrs['cell_name']
-		self.__report_file_name = 'ZTE/' + self.__ZTE_type + '/reports/' + self.__ZTE_type
-		self.__instructions_file = 'ZTE/' + self.__ZTE_type + '/requirements/' + 'formula.txt'
+		self.__report_file_name = 'ZTE/' + self.__ZTE_type + '/reports/' + self.__ZTE_type	
 		self.__table_name = 'DB/' + self.__ZTE_type + '.pkl'
 		self.__claster_check = claster_check
 		self.__date_range = date_range
 		self.__aggregation_time_type = aggregation_time_type
 		self.__aggregation_type = aggregation_type
+		self.__primary_keys = self.__df.attrs['primary_keys']
 # ----------------------------------------------------------------------------------
 	@staticmethod
 	def __create_df_from_temp_pickle():
 		return pd.read_pickle('DB/export_to_csv.temp',compression = 'zip')
+# ----------------------------------------------------------------------------------
+	@classmethod
+	def __extract_counters_from_formulas(cls,instructions_file):
+		formulas = cls.__extract_formulas_from_file(instructions_file) # getting dict with formula name as key and expression as value
+		all_counters = []
+		for formula in formulas:
+			expression = formula[formula.find('=') + 1:]
+			bad_words = '+-/*:.,()!@#$%^&' # possible bad words in formula expression
+			for word in bad_words:
+				expression = expression.replace(word,' ') # getting rid of possible bad words
+			text_list = [word.strip() for word in expression.split() if word[0].isalpha() and word[1:].isdigit()] # counter definiton is word with letter as first char and digits for the leftover
+			all_counters += (text_list)
+		return list(set(all_counters)) # list of counters without duplicates
+# ----------------------------------------------------------------------------------
+	@staticmethod
+	def __extract_formulas_from_file(instructions_file):
+		with open(instructions_file,'rt') as f:
+			formulas = [formulas_temp.strip() for formulas_temp in f.readlines() if not formulas_temp.isspace()] # checking for empty lines
+		return formulas
 # ----------------------------------------------------------------------------------
 	@classmethod
 	def __agg_by_time(cls,df,primary_keys,data_time_field_name,frequency,metrics):
@@ -47,8 +66,7 @@ class Aggregation:
 # ----------------------------------------------------------------------------------
 # Calculate new dataframes columns (dict keys) as evaluated expressions (dict values)
 	@classmethod
-	def __swap_counters_for_metrics(cls,df,counters,instructions_file):
-		metrics = cls.__metrics_from_file(instructions_file)
+	def __swap_counters_for_metrics(cls,df,counters,instructions_file,metrics):
 		df_columns = df.columns.tolist()
 		primary_keys = [key for key in df_columns if key not in counters]
 		for key,value in metrics.items():
@@ -65,9 +83,10 @@ class Aggregation:
 		return df
 # ----------------------------------------------------------------------------------
 	@classmethod
-	def __agg_by_type(cls,df,aggregation_type,node_name,data_time_field_name,counters):
+	def __agg_by_type(cls,df,aggregation_type,node_name,data_time_field_name,counters,primary_keys):
 		if aggregation_type == 'CELL':
-			return df
+			df_fields = primary_keys + counters
+			return df[df_fields]
 		if aggregation_type == 'NODE':
 			df_fields = [data_time_field_name,node_name] + counters # getting rid of useless primary keys
 			return df.groupby([data_time_field_name,node_name],as_index = False).sum()[df_fields]
@@ -102,18 +121,12 @@ class Aggregation:
 		print(time.time() - time1)
 		dframe = self.__agg_by_time(dframe,self.__primary_keys,self.__data_time_field_name,self.__aggregation_time_type,self.__metrics)
 		print(time.time() - time1)
-		dframe = self.__agg_by_type(dframe,self.__aggregation_type,self.__node_name,self.__data_time_field_name,self.__counters)
+		dframe = self.__agg_by_type(dframe,self.__aggregation_type,self.__node_name,self.__data_time_field_name,self.__counters,self.__primary_keys)
 		print(time.time() - time1)
-		dframe = self.__swap_counters_for_metrics(dframe,self.__counters,self.__instructions_file)
+		dframe = self.__swap_counters_for_metrics(dframe,self.__counters,self.__instructions_file,self.__metrics)
 		print(time.time() - time1)
 		dframe.to_csv((f'{self.__report_file_name}-{self.__date_range}-{self.__aggregation_type}-{self.__aggregation_time_type}.csv').replace(' ',''))		
 # ----------------------------------------------------------------------------------
-# Main function to get result from given pickle to temp pickle
-	def aggregate_to_dataframe(self):
-		dframe = self.__agg_by_date_interval(self.__df,self.__date_range,self.__data_time_field_name)
-		dframe = self.__apply_claster(dframe,self.__claster_check,self.__claster_name,self.__claster_values)
-		dframe = self.__swap_counters_for_metrics(dframe,self.__metrics,self.__counters)
-		dframe.to_pickle('DB/dashboard.temp',compression = 'zip')
 # ----------------------------------------------------------------------------------
 # Get metrics from txt file
 	@staticmethod

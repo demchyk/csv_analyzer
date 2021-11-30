@@ -12,6 +12,7 @@ import numpy as np
 from datetime import *
 
 
+
 def init_dashboard(server):
     """Create a Plotly Dash dashboard."""
     app = Dash(
@@ -21,6 +22,16 @@ def init_dashboard(server):
             '/static/dist/css/styles.css',
         ]
     )
+
+    def metrics_from_file(instructions_file):
+        with open(instructions_file,'rt') as f:
+            formulas = [formulas_temp.strip() for formulas_temp in f.readlines() if not formulas_temp.isspace()] # checking for empty lines
+        metrica_dic = {}
+        for formula in formulas:
+            metrica = formula[:formula.find('=')].strip() # formula name (before first '=' )
+            expression = formula[formula.find('=') + 1:] # formula expression (after first '=' )
+            metrica_dic[metrica] = expression.strip()
+        return metrica_dic
 
     # app = dash.Dash(__name__)
     # df = pd.read_csv("LTE2.csv", parse_dates=["COLLECTTIME"])
@@ -42,9 +53,10 @@ def init_dashboard(server):
         df = pd.read_pickle(path, compression = 'zip')
         start_date = str(df[df.attrs['data_time_field_name']].min()).split()[0].split('-')
         end_date = str(df[df.attrs['data_time_field_name']].max()).split()[0].split('-')
+
         keys_names = {'zte_type': df.attrs['zte_type'],'data_time_field_name': df.attrs['data_time_field_name'],
         'node_name': df.attrs['node_name'],'cell_name': df.attrs['cell_name'],
-        'metrics_names': df.attrs['metrics_names'],'metrics_formulas': df.attrs['metrics'],
+        'metrics_names': list(metrics_from_file('ZTE/' + df.attrs['zte_type'] + '/requirements/' + 'formula.txt').keys()),'metrics_formulas': metrics_from_file('ZTE/' + df.attrs['zte_type'] + '/requirements/' + 'formula.txt'),
         'primary_keys': df.attrs['primary_keys'],'counters': df.attrs['counters'],}
         # date(start_date[0], start_date[1], start_date[2])
         return df, keys_names, date(int(start_date[0]), int(start_date[1]), int(start_date[2])), date(int(end_date[0]), int(end_date[1]), int(end_date[2])), date(int(start_date[0]), int(start_date[1]), int(start_date[2])), date(int(end_date[0]), int(end_date[1]), int(end_date[2])), date(int(start_date[0]), int(start_date[1]), int(start_date[2])), date(int(end_date[0]), int(end_date[1]), int(end_date[2]))
@@ -133,15 +145,8 @@ def init_dashboard(server):
         final_table = df[primary_keys + list(metrics_formulas.keys())]
         return final_table
 
-    def metrics_from_file(instructions_file):
-        with open(instructions_file,'rt') as f:
-            formulas = [formulas_temp.strip() for formulas_temp in f.readlines() if not formulas_temp.isspace()] # checking for empty lines
-        metrica_dic = {}
-        for formula in formulas:
-            metrica = formula[:formula.find('=')].strip() # formula name (before first '=' )
-            expression = formula[formula.find('=') + 1:] # formula expression (after first '=' )
-            metrica_dic[metrica] = expression.strip()
-        return metrica_dic
+
+# ----------------------------------------------------------------------------------
     #-----------------------------------------Line chart for CELL------------------------------------------
 
     # Function for creating graph "Line chart for CELL by METRICS"

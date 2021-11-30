@@ -13,6 +13,4 @@ def start_agg_to_csv(time_interval,claster_check,aggregation_time_type,aggregati
 	aggr = Aggregation(time_interval,claster_check,aggregation_time_type,aggregation_type) # setting form request values as arguments
 	aggr.aggregate_to_csv()
 
-def start_agg_to_dashboard_pickle(zte_type,time_interval,claster_check):	
-	aggr = Aggregation() # no arguments since default parameters are None
-	aggr.aggregate_to_dataframe()
+
