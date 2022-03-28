@@ -185,7 +185,7 @@ class DataBasa:
     @classmethod
     def __group_counters_by_frequency(cls, primary_keys, grouped_counters, data_time_field_name, frequency):
         cutted_primary_keys = cls.__remover_collecttime_from_primary_keys(primary_keys, data_time_field_name)
-        grouped_counters = grouped_counters.groupby([pd.Grouper(key=data_time_field_name, freq=frequency)] + cutted_primary_keys, dropna=False).max()
+        grouped_counters = grouped_counters.groupby([pd.Grouper(key=data_time_field_name, freq=frequency)] + cutted_primary_keys, dropna=False).sum()
         grouped_counters.reset_index(inplace=True)
         return grouped_counters
 
