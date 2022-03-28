@@ -2,8 +2,8 @@ import os
 import zipfile
 import shutil
 
-class Net_Folder:
 
+class Net_Folder:
     def __init__(self, path):
         self.__path = path
         self.__zipfiles_list = self.__class__.__get_ziplist_by_size(self.__get_input_files_path(self.__path))
@@ -56,8 +56,7 @@ class Net_Folder:
 
     @classmethod
     def __get_ziplist_by_folder(cls, path):
-        li = [f.path for f in os.scandir(
-            path) if f.is_dir() and os.listdir(f)]
+        li = [f.path for f in os.scandir(path) if f.is_dir() and os.listdir(f)]
         rez = [[] for item in li]
         for i in range(len(li)):
             for address, dirs, files in os.walk(li[i]):
@@ -71,7 +70,7 @@ class Net_Folder:
         temp_li = []
         for address, dirs, files in os.walk(path):
             for file in files:
-                if file.endswith(".zip"):
+                if file.endswith(".zip") and not file.split('.zip')[0].split('_')[-1].startswith('R'):
                     temp_li.append([os.path.join(address, file), os.path.getsize(os.path.join(address, file))])
         temp_li.sort(key=lambda x: x[0])
         rez = [[]]
@@ -79,7 +78,7 @@ class Net_Folder:
         size_counter = 0
         for item in temp_li:
             size_counter += item[1]
-            if size_counter >= ((10**9)/2):
+            if size_counter >= ((10**9) / 2):
                 rez.append([])
                 i += 1
                 rez[i].append(item[0])

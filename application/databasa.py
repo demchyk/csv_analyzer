@@ -185,7 +185,7 @@ class DataBasa:
     @classmethod
     def __group_counters_by_frequency(cls, primary_keys, grouped_counters, data_time_field_name, frequency):
         cutted_primary_keys = cls.__remover_collecttime_from_primary_keys(primary_keys, data_time_field_name)
-        grouped_counters = grouped_counters.groupby([pd.Grouper(key=data_time_field_name, freq=frequency)] + cutted_primary_keys, dropna=False).sum()
+        grouped_counters = grouped_counters.groupby([pd.Grouper(key=data_time_field_name, freq=frequency)] + cutted_primary_keys, dropna=False).max()
         grouped_counters.reset_index(inplace=True)
         return grouped_counters
 
@@ -221,7 +221,7 @@ class DataBasa:
         df.drop(['CELLNAME'], axis=1, inplace=True)  # dropping CELLNAME from old dataframe
         cutted_primary_keys = primary_keys.copy()
         cutted_primary_keys.remove('CELLNAME')
-        df = df.groupby(cutted_primary_keys, as_index=False).sum()  # group WCDMA dataframe by primary keys
+        df = df.groupby(cutted_primary_keys, as_index=False).max()  # group WCDMA dataframe by primary keys
         return df.merge(temp_df_cellname, how='left')  # left join
 
 
