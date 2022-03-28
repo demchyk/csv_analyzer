@@ -7,6 +7,7 @@ import shutil
 
 
 class Aggregation:
+
     # Getting all needed info from dataframe attributes
     def __init__(self, date_range=None, claster_check=None, aggregation_time_type=None, aggregation_type=None):
         self.__df = self.__class__.__create_df_from_temp_pickle()

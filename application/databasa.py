@@ -173,7 +173,7 @@ class DataBasa:
     # ----------------------------------------------------------------------------------
     @staticmethod
     def __group_data_frame_by_primary_keys(concated_data_frames, primary_keys):
-        grouped_counters = concated_data_frames.groupby(primary_keys, as_index=False, dropna=False).max()
+        grouped_counters = concated_data_frames.groupby(primary_keys, as_index=False, dropna=False).sum()
         return grouped_counters
 
     # ----------------------------------------------------------------------------------
@@ -221,7 +221,7 @@ class DataBasa:
         df.drop(['CELLNAME'], axis=1, inplace=True)  # dropping CELLNAME from old dataframe
         cutted_primary_keys = primary_keys.copy()
         cutted_primary_keys.remove('CELLNAME')
-        df = df.groupby(cutted_primary_keys, as_index=False).max()  # group WCDMA dataframe by primary keys
+        df = df.groupby(cutted_primary_keys, as_index=False).sum()  # group WCDMA dataframe by primary keys
         return df.merge(temp_df_cellname, how='left')  # left join
 
 
