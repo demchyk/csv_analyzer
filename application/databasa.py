@@ -1,9 +1,9 @@
 import pandas as pd
 from zipfile import ZipFile
 from functools import partial
-import time
-from time import ctime
-import parmap
+from time import ctime, sleep
+from multiprocessing.dummy import Pool as ThreadPool
+from multiprocessing import Pool as ProcessPool
 
 pd.set_option('use_inf_as_na', True)
 
@@ -28,22 +28,14 @@ class DataBasa:
     # ----------------------------------------------------------------------------------
     # Main class method
     def result_to_pickle(self):
-        grouped_counters_list = []
-        ziplist_len = len(self.__zipfiles_list_list)
-        i = 0
-        for zip_file_list in self.__zipfiles_list_list:  # we are getting list of dataframe's lists made from chunked ziplist
-            i += 1
-            remaining_chunk_len = ziplist_len - i
-            start_time = time.time()
-            print(ctime(), '--- Start working with chunk №', i, 'of', ziplist_len)
-            grouped_counters = self.__data_frame_processing(
-                self.__counters, self.__primary_keys, self.__data_time_field_name, self.__counters_group_by_frequency, zip_file_list, self.__ZTE_type
-            )
-            grouped_counters_list.append(grouped_counters)
-            end_time = time.time()
-            print(ctime(), '--- Chunk №', i, 'is processed')
-            print(f'Approximate remaining time is {int((end_time - start_time)*remaining_chunk_len)} second(s)')
-        print(ctime(), '--- Start concatinating dataframe')
+        print(ctime(), f'--- Start processing {len(self.__zipfiles_list_list)} chunks in parallel')
+        process_zipfile_list = partial(self._data_frame_processing, self.__counters, self.__primary_keys, self.__data_time_field_name, self.__counters_group_by_frequency, self.__ZTE_type)
+        with ProcessPool() as pool:
+            grouped_counters_list = pool.starmap(process_zipfile_list, enumerate(self.__zipfiles_list_list))
+        sleep(1)
+        print(ctime(), f'--- Sucessfully processed {len(self.__zipfiles_list_list)} chunks in parallel')
+        sleep(1)
+        print(ctime(), f'--- Start concatinating resulting DataFrame')
         new_pickle = pd.concat(grouped_counters_list)  # concating dataframe list in one dataframe
 
         # ----------------------------WCDMA-CRUTCH-START-------------------------------------------
@@ -98,12 +90,9 @@ class DataBasa:
     def _fill_temp_data_frame_list(cls, counters, zip_list, primary_keys, table_name):
         df_list = []
         read_zip_partial = partial(cls._read_zip, primary_keys, counters, table_name)
-        df_list_of_list = parmap.map(read_zip_partial, zip_list, pm_pbar=True)
-        for df_list_elem in df_list_of_list:
-            if df_list_elem:  # check if there was a zip with none valid CSV
-                df_list += df_list_elem
-        return df_list
-
+        with ThreadPool() as pool:
+            df_list_of_list = pool.map(read_zip_partial, zip_list)
+        return [df for df_list in df_list_of_list if df_list for df in df_list]
     # ----------------------------------------------------------------------------------
     # Creating dataframe from CSV. If CSV has any counters dataframe is added to list of dataframes
     @staticmethod
@@ -151,23 +140,24 @@ class DataBasa:
     # ----------------------------------------------------------------------------------
     # Set of methods from reading CSV files to get ready dataframe
     @classmethod
-    def __data_frame_processing(cls, counters, primary_keys, data_time_field_name, counters_group_by_frequency, zip_list, table_name):
+    def _data_frame_processing(cls, counters, primary_keys, data_time_field_name, counters_group_by_frequency, table_name, chunk_id, zip_list):
+        print(ctime(), f'--- Start processing chunk № {chunk_id} (building DataFrame)')
         grouped_counters = cls.__generate_concated_temp_data_frame(counters, zip_list, primary_keys, table_name)
-        print(ctime(), 'start grouping by primary_keys')
+        print(ctime(), f'--- Start grouping chunk № {chunk_id} by primary_keys')
         grouped_counters = cls.__group_data_frame_by_primary_keys(grouped_counters, primary_keys)
         grouped_counters[data_time_field_name] = cls.__set_data_time_format_for_dataframe(data_time_field_name, grouped_counters)
-        print(ctime(), 'start frequency')
+        print(ctime(), f'--- Start grouping chunk № {chunk_id} by frequency')
         grouped_counters = cls.__group_counters_by_frequency(primary_keys, grouped_counters, data_time_field_name, counters_group_by_frequency)
-        print(ctime(), 'end frequency')
+        print(ctime(), f'--- Chunk № {chunk_id} sucessfully processed')
         return grouped_counters
 
     # ----------------------------------------------------------------------------------
     @classmethod
     def __generate_concated_temp_data_frame(cls, counters, zip_list, primary_keys, table_name):
         temp_data_frame_list = cls._fill_temp_data_frame_list(counters, zip_list, primary_keys, table_name)
-        print(ctime(), 'start concating')
         concated_data_frames = pd.concat(temp_data_frame_list)
         concated_data_frames.fillna(dict.fromkeys(counters, 0), inplace=True)
+        concated_data_frames = concated_data_frames.drop_duplicates().reset_index(drop=True)
         return cls.__replace_dtypes_in_milestone_dataframe_(concated_data_frames)
 
     # ----------------------------------------------------------------------------------

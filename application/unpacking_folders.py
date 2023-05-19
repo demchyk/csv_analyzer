@@ -65,26 +65,42 @@ class Net_Folder:
                         rez[i].append(os.path.join(address, file))
         return rez
 
+    # @classmethod
+    # def __get_ziplist_by_size(cls, path):
+    #     temp_li = []
+    #     for address, dirs, files in os.walk(path):
+    #         for file in files:
+    #             if file.endswith(".zip") and not file.split('.zip')[0].split('_')[-1].startswith('R'):
+    #                 temp_li.append([os.path.join(address, file), os.path.getsize(os.path.join(address, file))])
+    #     temp_li.sort(key=lambda x: x[0])
+    #     rez = [[]]
+    #     i = 0
+    #     size_counter = 0
+    #     for item in temp_li:
+    #         size_counter += item[1]
+    #         if size_counter >= ((10**9) / 2):
+    #             rez.append([])
+    #             i += 1
+    #             rez[i].append(item[0])
+    #             size_counter = 0
+    #         else:
+    #             rez[i].append(item[0])
+    #     return rez
+
     @classmethod
     def __get_ziplist_by_size(cls, path):
-        temp_li = []
-        for address, dirs, files in os.walk(path):
-            for file in files:
-                if file.endswith(".zip") and not file.split('.zip')[0].split('_')[-1].startswith('R'):
-                    temp_li.append([os.path.join(address, file), os.path.getsize(os.path.join(address, file))])
-        temp_li.sort(key=lambda x: x[0])
-        rez = [[]]
-        i = 0
+        zip_files_list = sorted([os.path.join(address, file) for address, _, files in os.walk(path) for file in files if file.endswith(".zip")])
+        rez, zip_list = [], []
         size_counter = 0
-        for item in temp_li:
-            size_counter += item[1]
-            if size_counter >= ((10**9) / 2):
-                rez.append([])
-                i += 1
-                rez[i].append(item[0])
+        for zip_file in zip_files_list:
+            zip_list.append(zip_file)
+            size_counter += os.path.getsize(zip_file)
+            if size_counter >= ((10**9) / 2) and not zip_file.split('.zip')[0].split('_')[-1].startswith('R'):
+                rez.append(zip_list)
                 size_counter = 0
-            else:
-                rez[i].append(item[0])
+                zip_list = []
+        if zip_list:
+            rez.append(zip_list)
         return rez
 
     @staticmethod
