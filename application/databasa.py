@@ -1,6 +1,7 @@
 import pandas as pd
 from zipfile import ZipFile
 from functools import partial
+from itertools import starmap
 from time import ctime, sleep
 from multiprocessing.dummy import Pool as ThreadPool
 from multiprocessing import Pool as ProcessPool
@@ -30,8 +31,7 @@ class DataBasa:
     def result_to_pickle(self):
         print(ctime(), f'--- Start processing {len(self.__zipfiles_list_list)} chunks in parallel')
         process_zipfile_list = partial(self._data_frame_processing, self.__counters, self.__primary_keys, self.__data_time_field_name, self.__counters_group_by_frequency, self.__ZTE_type)
-        with ProcessPool() as pool:
-            grouped_counters_list = pool.starmap(process_zipfile_list, enumerate(self.__zipfiles_list_list))
+        grouped_counters_list = [process_zipfile_list(i, zipfile_list) for i, zipfile_list in enumerate(self.__zipfiles_list_list)]
         sleep(1)
         print(ctime(), f'--- Sucessfully processed {len(self.__zipfiles_list_list)} chunks in parallel')
         sleep(1)
@@ -88,9 +88,10 @@ class DataBasa:
     # Applying multiproccess method parmap to read multiple CSVs at once
     @classmethod
     def _fill_temp_data_frame_list(cls, counters, zip_list, primary_keys, table_name):
-        df_list = []
+        # df_list = []
         read_zip_partial = partial(cls._read_zip, primary_keys, counters, table_name)
-        with ThreadPool() as pool:
+        # df_list_of_list = [read_zip_partial(zipa) for zipa in zip_list]
+        with ProcessPool(8) as pool:
             df_list_of_list = pool.map(read_zip_partial, zip_list)
         return [df for df_list in df_list_of_list if df_list for df in df_list]
     # ----------------------------------------------------------------------------------

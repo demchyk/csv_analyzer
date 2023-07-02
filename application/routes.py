@@ -24,7 +24,9 @@ def load_data_action():
 		engine.start_filling(zte_type) # method to fill pickle from zip(csv)
 		print('--- Super algorithm has dealt with it in just ',time.time() - time1,' seconds ---')
 		return redirect(url_for('load_data', result = 'Success'))
-	except:
+	except Exception as e:
+		print("An error has occured! See logs below:")
+		print(e)
 		return redirect(url_for('load_data', result = 'Missing some files / folders'))
 
 # ----------------------------------------------------------------------------------
